@@ -1,0 +1,43 @@
+name: Run code checks on commit
+
+on:
+  push:
+    branches-ignore:
+      - master
+
+jobs:
+  check_backend:
+    name: Run code checks on Backend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Setup NodeJS v23
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '23.x'
+          check-latest: true
+          cache: yarn
+          cache-dependency-path: backend/yarn.lock
+
+      - name: Install dependencies
+        working-directory: backend
+        run: yarn install
+
+      - name: Run ESLint
+        working-directory: backend
+        run: yarn lint
+
+      - name: Run Vitest (Unit)
+        working-directory: backend
+        run: yarn test
+
+      - name: Run Vitest (End-to-End)
+        working-directory: backend
+        run: yarn test:e2e
+
+      - name: Run Vitest (Coverage)
+        working-directory: backend
+        run: yarn test:cov
