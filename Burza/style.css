@@ -1,0 +1,348 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
+}
+
+/* Общие стили */
+body {
+    background: #222222;
+    min-height: 100vh;
+    color: #ffffff;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Стили для хедера */
+header {
+    background: #8FA296;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 1rem 2rem;
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+.logo img {
+    height: 40px;
+    width: auto;
+    transition: transform 0.3s ease;
+}
+
+.logo:hover img {
+    transform: scale(1.05);
+}
+
+nav {
+    display: flex;
+    gap: 1rem;
+}
+
+.nav-link, .account-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #ffffff;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    transition: all 0.3s;
+}
+
+.nav-link:hover, .account-link:hover {
+    background: #222222;
+    color: #ffffff;
+}
+
+.nav-link.active, .account-link.active {
+    background: #222222;
+    color: #ffffff;
+}
+
+/* Стили для главного контента */
+main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    min-height: calc(100vh - 80px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.description {
+    text-align: center;
+    margin-bottom: 3rem;
+    color: #ffffff;
+}
+
+.description h1 {
+    color: #ffffff;
+    margin-bottom: 1rem;
+}
+
+.description p {
+    color: #ffffff;
+    line-height: 1.6;
+}
+
+/* Стили для поиска */
+.search-container {
+    margin: 0 auto;
+    width: 100%;
+    max-width: 800px;
+}
+
+.search-box {
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.search-box input {
+    flex: 1;
+    padding: 0.8rem 1rem;
+    border: 1px solid #8FA296;
+    border-radius: 5px;
+    font-size: 1rem;
+    background: #ffffff;
+    color: #222222;
+    min-width: 0;
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: #8FA296;
+}
+
+.search-box button {
+    padding: 0.8rem;
+    background: #8FA296;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    flex-shrink: 0;
+}
+
+.search-box button:hover {
+    background: #7a8a80;
+}
+
+.search-box button i {
+    font-size: 1.2rem;
+}
+
+/* Стили для результатов */
+.results-container {
+    background: #8FA296;
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Стили для страницы аккаунта */
+.account-container {
+    background: #8FA296;
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.profile-section {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #222222;
+}
+
+.profile-image {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-image svg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-info h2 {
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+}
+
+.member-since {
+    color: #ffffff;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.logout-button {
+    background: #8FA296;
+    color: #ffffff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background 0.3s;
+}
+
+.logout-button:hover {
+    background: #7a8a80;
+}
+
+.favorites-section h3 {
+    color: #ffffff;
+    margin-bottom: 1rem;
+}
+
+.favorites-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.favorite-item {
+    background: #222222;
+    padding: 1rem;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.favorite-item .stock-info h4 {
+    color: #ffffff;
+    margin-bottom: 0.25rem;
+}
+
+.favorite-item .stock-info p {
+    color: #ffffff;
+    font-size: 0.9rem;
+}
+
+.remove-favorite {
+    background: none;
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    padding: 0.5rem;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.3s;
+}
+
+.remove-favorite:hover {
+    background: rgba(255, 0, 0, 0.2);
+}
+
+/* Стили для страницы входа */
+.login-container {
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+    margin: 0 auto;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.login-box {
+    background: #8FA296;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+h1, h2 {
+    text-align: center;
+    color: #ffffff;
+    margin-bottom: 30px;
+    font-size: 24px;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #222222;
+    border-radius: 5px;
+    font-size: 16px;
+    background: #ffffff;
+    color: #222222;
+}
+
+input:focus {
+    outline: none;
+    border-color: #8FA296;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background: #8FA296;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+button:hover {
+    background: #7a8a80;
+}
+
+.register-link {
+    text-align: center;
+    margin-top: 20px;
+    color: #ffffff;
+}
+
+.register-link a {
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.register-link a:hover {
+    text-decoration: underline;
+}

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Market - Account</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="index.html" class="logo">
+                <img src="images/logo.png" alt="Stock Market Logo">
+            </a>
+            <nav>
+                <a href="index.html" class="nav-link">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a href="account.html" class="account-link active">
+                    <i class="fas fa-user"></i>
+                    <span id="username-display">Account</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="account-container">
+            <div class="profile-section">
+                <div class="profile-image" id="profileImage">
+                    <!-- SVG аватар будет вставлен сюда -->
+                </div>
+                <div class="profile-info">
+                    <h2 id="profile-username">Username</h2>
+                    <p class="member-since">Member since: <span id="member-since-date">2024</span></p>
+                    <button class="logout-button" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="favorites-section">
+                <h3>Your Favorites</h3>
+                <div class="favorites-list" id="favoritesList">
+                    <!-- Здесь будут отображаться избранные акции -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
