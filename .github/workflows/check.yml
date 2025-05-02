@@ -37,3 +37,7 @@ jobs:
       - name: Run Vitest (End-to-End)
         working-directory: backend
         run: yarn test:e2e
+
+      - name: Run Vitest (Coverage)
+        working-directory: backend
+        run: yarn test:cov
