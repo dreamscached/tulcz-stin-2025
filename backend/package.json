@@ -15,7 +15,7 @@
 		"test": "vitest run",
 		"test:watch": "vitest run --watch",
 		"test:cov": "vitest run --coverage.enabled --coverage.all",
-		"test:e2e": "vitest run --config ./test/vitest-e2e.config.ts",
+		"test:e2e": "vitest run --config vitest-e2e.config.ts",
 		"migration:run": "tsc -p tsconfig.build.json && typeorm migration:run -d ./dist/src/config/typeorm-migrations.config.js",
 		"migration:generate": "tsc -p tsconfig.build.json && typeorm migration:generate -d ./dist/src/config/typeorm-migrations.config.js ./src/migrations/$0",
 		"migration:revert": "tsc -p tsconfig.build.json && typeorm migration:revert -d ./dist/src/config/typeorm-migrations.config.js",
