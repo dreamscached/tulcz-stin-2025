@@ -1,0 +1,7 @@
+.git
+.github
+backend/node_modules
+backend/coverage
+backend/dist
+backend/.yarn/*
+!backend/.yarn/releases
