@@ -1,4 +1,4 @@
-import { INestApplication } from "@nestjs/common";
+import { INestApplication, ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 
@@ -7,6 +7,7 @@ import { PreferencesService } from "./preferences/preferences.service.js";
 
 async function bootstrap(): Promise<void> {
 	const app = await NestFactory.create(AppModule);
+	app.useGlobalPipes(new ValidationPipe());
 	await createInitialPreferences(app);
 
 	const port = app.get(ConfigService).get<string>("APP_PORT");
