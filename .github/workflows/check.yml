@@ -40,4 +40,4 @@ jobs:
 
       - name: Run Vitest (Coverage)
         working-directory: backend
-        run: yarn test:cov
+        run: yarn test:cov && scripts/coverage.sh
