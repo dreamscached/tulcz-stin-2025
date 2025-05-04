@@ -4,6 +4,7 @@ import { ServeStaticModule } from "@nestjs/serve-static";
 
 import { AppController } from "./app.controller.js";
 import { AppService } from "./app.service.js";
+import { PreferencesModule } from "./preferences/preferences.module.js";
 
 @Module({
 	imports: [
@@ -14,7 +15,8 @@ import { AppService } from "./app.service.js";
 				dotfiles: "ignore",
 				maxAge: 3600e3 // 1 hour TTL
 			}
-		})
+		}),
+		PreferencesModule
 	],
 	controllers: [AppController],
 	providers: [AppService]
