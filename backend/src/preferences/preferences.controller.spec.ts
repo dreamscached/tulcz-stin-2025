@@ -3,11 +3,10 @@ import { Test, TestingModule } from "@nestjs/testing";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { UpdatePreferencesDto } from "./dto/update-preferences.dto.js";
 import { PreferencesController } from "./preferences.controller.js";
 import { PreferencesService } from "./preferences.service.js";
 import { Preferences } from "./preferences.types.js";
-
-type UpdatePreferencesDto = Partial<Preferences>;
 
 describe("PreferencesController", () => {
 	let controller: PreferencesController;
