@@ -7,7 +7,13 @@ import { PreferencesService } from "./preferences/preferences.service.js";
 
 async function bootstrap(): Promise<void> {
 	const app = await NestFactory.create(AppModule);
-	app.useGlobalPipes(new ValidationPipe());
+	app.useGlobalPipes(
+		new ValidationPipe({
+			whitelist: true, // no extra properties allowed
+			forbidNonWhitelisted: true
+		})
+	);
+
 	await createInitialPreferences(app);
 
 	const port = app.get(ConfigService).get<string>("APP_PORT");
