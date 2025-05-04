@@ -16,7 +16,7 @@ const __dirname = dirname(__filename);
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true, envFilePath: [".env", ".env.local"] }),
 		ServeStaticModule.forRoot({
-			rootPath: join(__dirname, "..", "static"),
+			rootPath: join(__dirname, "..", "..", "static"),
 			serveStaticOptions: {
 				dotfiles: "ignore",
 				maxAge: 3600e3 // 1 hour TTL
