@@ -1,14 +1,11 @@
-import { Body, Controller, Get, Inject, NotFoundException, Patch } from "@nestjs/common";
+import { Body, Controller, Get, NotFoundException, Patch } from "@nestjs/common";
 
 import { UpdatePreferencesDto } from "./dto/update-preferences.dto.js";
 import { PreferencesService } from "./preferences.service.js";
 
 @Controller("/preferences")
 export class PreferencesController {
-	constructor(
-		@Inject()
-		private readonly preferences: PreferencesService
-	) {}
+	constructor(private readonly preferences: PreferencesService) {}
 
 	@Get("/")
 	async readPreferences() {
