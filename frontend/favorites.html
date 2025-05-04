@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Market - Home</title>
+    <title>Stock Market - Favorites</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -24,19 +24,17 @@
 
     <main>
         <div class="description">
-            <h1>Welcome to Burzalupa</h1>
-            <p>Search for stocks, track your favorite companies, and stay updated with the latest market trends.</p>
+            <h1>Favorite Stocks</h1>
+            <p>Your shared list of favorite stocks and companies.</p>
         </div>
 
-        <div class="search-container">
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Enter stock symbol or company name...">
+        <div class="favorites-container">
+            <div id="favoritesList" class="stock-list">
+                <!-- Favorites will be populated here by JavaScript -->
             </div>
-            <div id="searchSuggestions" class="search-suggestions"></div>
-            <div id="selectedStocks" class="selected-stocks"></div>
         </div>
     </main>
 
     <script src="script.js"></script>
 </body>
-</html>
+</html> 

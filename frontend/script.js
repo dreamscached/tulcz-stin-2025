@@ -1,147 +1,79 @@
-// Проверка авторизации при загрузке страницы
+// Test stock data
+const testStocks = [
+    { symbol: 'AAPL', name: 'Apple Inc.', price: 175.04, change: 1.2, sector: 'Technology' },
+    { symbol: 'MSFT', name: 'Microsoft Corporation', price: 415.32, change: 0.8, sector: 'Technology' },
+    { symbol: 'GOOGL', name: 'Alphabet Inc.', price: 142.56, change: -0.5, sector: 'Technology' },
+    { symbol: 'AMZN', name: 'Amazon.com Inc.', price: 178.75, change: 1.5, sector: 'Consumer Cyclical' },
+    { symbol: 'TSLA', name: 'Tesla Inc.', price: 177.77, change: -2.1, sector: 'Automotive' },
+    { symbol: 'META', name: 'Meta Platforms Inc.', price: 485.58, change: 2.3, sector: 'Technology' },
+    { symbol: 'NVDA', name: 'NVIDIA Corporation', price: 875.28, change: 3.2, sector: 'Technology' },
+    { symbol: 'JPM', name: 'JPMorgan Chase & Co.', price: 195.63, change: 0.4, sector: 'Financial Services' },
+    { symbol: 'V', name: 'Visa Inc.', price: 280.33, change: -0.3, sector: 'Financial Services' },
+    { symbol: 'WMT', name: 'Walmart Inc.', price: 60.11, change: 0.7, sector: 'Consumer Defensive' },
+    { symbol: 'JNJ', name: 'Johnson & Johnson', price: 157.95, change: -0.2, sector: 'Healthcare' },
+    { symbol: 'PG', name: 'Procter & Gamble Co.', price: 160.84, change: 0.5, sector: 'Consumer Defensive' },
+    { symbol: 'MA', name: 'Mastercard Inc.', price: 475.96, change: 1.1, sector: 'Financial Services' },
+    { symbol: 'HD', name: 'Home Depot Inc.', price: 362.35, change: -0.8, sector: 'Consumer Cyclical' },
+    { symbol: 'BAC', name: 'Bank of America Corp.', price: 37.49, change: 0.6, sector: 'Financial Services' }
+];
+
+// Initialize shared favorites on page load
 document.addEventListener('DOMContentLoaded', function() {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    
-    // Проверяем, находимся ли мы на странице входа
-    const isLoginPage = window.location.pathname.includes('login.html');
-    
-    if (!currentUser && !isLoginPage) {
-        window.location.href = 'login.html';
-        return;
-    }
-
-    // Инициализация тестовых данных
-    if (currentUser) {
-        initializeTestData(currentUser.username);
-
-        // Отображаем имя пользователя в хедере
-        const usernameDisplay = document.getElementById('username-display');
-        if (usernameDisplay) {
-            usernameDisplay.textContent = currentUser.username;
-        }
-
-        // Отображаем имя пользователя в профиле
-        const profileUsername = document.getElementById('profile-username');
-        if (profileUsername) {
-            profileUsername.textContent = currentUser.username;
-        }
-
-        // Загружаем случайную фотку профиля
-        loadRandomProfileImage();
-
-        // Загружаем избранные акции
-        loadFavorites();
-    }
-});
-
-// Функция для инициализации тестовых данных
-function initializeTestData(username) {
-    const favorites = JSON.parse(localStorage.getItem('favorites') || '{}');
-    
-    // Если у пользователя еще нет избранных, добавляем тестовые данные
-    if (!favorites[username] || favorites[username].length === 0) {
-        favorites[username] = [
+    // Initialize shared favorites if they don't exist
+    if (!localStorage.getItem('sharedFavorites')) {
+        const initialFavorites = [
             { symbol: 'AAPL', name: 'Apple Inc.' },
             { symbol: 'GOOGL', name: 'Alphabet Inc.' },
             { symbol: 'MSFT', name: 'Microsoft Corporation' },
             { symbol: 'AMZN', name: 'Amazon.com Inc.' },
             { symbol: 'TSLA', name: 'Tesla Inc.' }
         ];
-        localStorage.setItem('favorites', JSON.stringify(favorites));
-    }
-}
-
-// Функция для генерации случайного цвета
-function getRandomColor() {
-    const letters = '0123456789ABCDEF';
-    let color = '#';
-    for (let i = 0; i < 6; i++) {
-        color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
-}
-
-// Функция для генерации случайного SVG аватара
-function generateRandomAvatar(username) {
-    const colors = [
-        getRandomColor(),
-        getRandomColor(),
-        getRandomColor()
-    ];
-
-    // Создаем уникальный seed на основе имени пользователя
-    const seed = username.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-
-    // Генерируем случайные параметры для аватара
-    const size = 150;
-    const elements = Math.floor(Math.random() * 5) + 3; // от 3 до 7 элементов
-    const rotation = Math.floor(Math.random() * 360);
-
-    let svg = `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">`;
-    
-    // Добавляем фон
-    svg += `<rect width="${size}" height="${size}" fill="${colors[0]}" />`;
-
-    // Добавляем случайные элементы
-    for (let i = 0; i < elements; i++) {
-        const x = Math.random() * size;
-        const y = Math.random() * size;
-        const width = Math.random() * 50 + 20;
-        const height = Math.random() * 50 + 20;
-        const elementRotation = Math.random() * 360;
-        
-        svg += `<rect 
-            x="${x}" 
-            y="${y}" 
-            width="${width}" 
-            height="${height}" 
-            fill="${colors[1 + i % 2]}"
-            transform="rotate(${elementRotation} ${x + width/2} ${y + height/2})"
-            opacity="0.8"
-        />`;
+        localStorage.setItem('sharedFavorites', JSON.stringify(initialFavorites));
     }
 
-    svg += '</svg>';
-    return svg;
-}
+    // Load favorites if we're on the favorites page
+    if (window.location.pathname.includes('favorites.html')) {
+        loadFavorites();
+    }
 
-// Функция для загрузки случайной фотки профиля
-function loadRandomProfileImage() {
-    const profileImage = document.getElementById('profileImage');
-    if (!profileImage) return;
+    // Initialize search input event listeners
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', handleSearchInput);
+        searchInput.addEventListener('focus', handleSearchInput);
+        document.addEventListener('click', handleClickOutside);
+    }
+});
 
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    if (!currentUser) return;
-
-    // Генерируем новый аватар
-    const avatarSVG = generateRandomAvatar(currentUser.username);
-    profileImage.innerHTML = avatarSVG;
-}
-
-// Функция для загрузки избранных акций
+// Function to load favorites
 function loadFavorites() {
     const favoritesList = document.getElementById('favoritesList');
     if (!favoritesList) return;
 
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    if (!currentUser) return;
+    const favorites = JSON.parse(localStorage.getItem('sharedFavorites') || '[]');
 
-    const favorites = JSON.parse(localStorage.getItem('favorites') || '{}');
-    const userFavorites = favorites[currentUser.username] || [];
-
-    if (userFavorites.length === 0) {
-        favoritesList.innerHTML = '<p class="no-favorites">You haven\'t added any favorites yet.</p>';
+    if (favorites.length === 0) {
+        favoritesList.innerHTML = '<p class="no-favorites">No favorites added yet.</p>';
         return;
     }
 
     favoritesList.innerHTML = '';
-    userFavorites.forEach(stock => {
+    favorites.forEach(stock => {
+        const stockData = testStocks.find(s => s.symbol === stock.symbol) || stock;
         const favoriteItem = document.createElement('div');
         favoriteItem.className = 'favorite-item';
         favoriteItem.innerHTML = `
             <div class="stock-info">
-                <h4>${stock.symbol}</h4>
-                <p>${stock.name}</p>
+                <h4>${stockData.symbol}</h4>
+                <p>${stockData.name}</p>
+                ${stockData.price ? `
+                    <div class="stock-price">
+                        <span class="price">$${stockData.price.toFixed(2)}</span>
+                        <span class="change ${stockData.change >= 0 ? 'positive' : 'negative'}">
+                            ${stockData.change >= 0 ? '+' : ''}${stockData.change}%
+                        </span>
+                    </div>
+                ` : ''}
             </div>
             <button class="remove-favorite" onclick="removeFavorite('${stock.symbol}')">
                 <i class="fas fa-times"></i>
@@ -151,193 +83,180 @@ function loadFavorites() {
     });
 }
 
-// Функция для удаления из избранного
+// Function to remove from favorites
 function removeFavorite(symbol) {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    if (!currentUser) return;
-
-    const favorites = JSON.parse(localStorage.getItem('favorites') || '{}');
-    if (!favorites[currentUser.username]) return;
-
-    const userFavorites = favorites[currentUser.username];
-    const index = userFavorites.findIndex(stock => stock.symbol === symbol);
+    const favorites = JSON.parse(localStorage.getItem('sharedFavorites') || '[]');
+    const index = favorites.findIndex(stock => stock.symbol === symbol);
     
     if (index !== -1) {
-        userFavorites.splice(index, 1);
-        localStorage.setItem('favorites', JSON.stringify(favorites));
-        loadFavorites(); // Обновляем список избранного
+        favorites.splice(index, 1);
+        localStorage.setItem('sharedFavorites', JSON.stringify(favorites));
+        loadFavorites();
     }
 }
 
-// Функция для показа формы регистрации
-function showRegister() {
-    document.getElementById('loginForm').style.display = 'none';
-    document.getElementById('registerForm').style.display = 'block';
-}
-
-// Функция для показа формы логина
-function showLogin() {
-    document.getElementById('registerForm').style.display = 'none';
-    document.getElementById('loginForm').style.display = 'block';
-}
-
-// Функция для регистрации нового пользователя
-function register() {
-    const username = document.getElementById('newUsername').value;
-    const password = document.getElementById('newPassword').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-
-    // Проверка совпадения паролей
-    if (password !== confirmPassword) {
-        alert('Passwords do not match!');
-        return;
-    }
-
-    // Проверка длины пароля
-    if (password.length < 6) {
-        alert('Password must be at least 6 characters long!');
-        return;
-    }
-
-    // Проверка длины имени пользователя
-    if (username.length < 3) {
-        alert('Username must be at least 3 characters long!');
-        return;
-    }
-
-    // Сохраняем пользователя в localStorage
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    
-    // Проверяем, не существует ли уже такой пользователь
-    if (users.some(user => user.username === username)) {
-        alert('Username already exists!');
-        return;
-    }
-
-    // Добавляем нового пользователя
-    users.push({ username, password });
-    localStorage.setItem('users', JSON.stringify(users));
-    
-    alert('Registration successful! Please login.');
-    showLogin();
-}
-
-// Функция для обработки нажатия Enter в форме входа
-function handleLoginKeyPress(event) {
-    if (event.key === 'Enter') {
-        login();
-    }
-}
-
-// Функция для обработки нажатия Enter в форме регистрации
-function handleRegisterKeyPress(event) {
-    if (event.key === 'Enter') {
-        register();
-    }
-}
-
-// Функция для входа
-function login() {
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const user = users.find(u => u.username === username && u.password === password);
-
-    if (user) {
-        // Сохраняем текущего пользователя
-        localStorage.setItem('currentUser', JSON.stringify({ username }));
-        // Перенаправляем на главную страницу
-        window.location.href = 'index.html';
-    } else {
-        alert('Invalid username or password!');
-    }
-}
-
-// Функция для поиска акций
-async function searchStocks() {
-    const searchInput = document.getElementById('searchInput').value;
-    if (!searchInput) {
-        alert('Please enter a search term');
-        return;
-    }
-
-    const resultsContainer = document.getElementById('searchResults');
-    resultsContainer.innerHTML = '<div class="loading">Searching...</div>';
-
-    try {
-        // Здесь нужно будет добавить ваш API ключ Tiingo
-        const response = await fetch(`https://api.tiingo.com/tiingo/utilities/search?query=${searchInput}&token=YOUR_API_KEY`);
-        const data = await response.json();
-
-        if (data.length === 0) {
-            resultsContainer.innerHTML = '<div class="no-results">No results found</div>';
-            return;
-        }
-
-        resultsContainer.innerHTML = '';
-        data.forEach(stock => {
-            const stockElement = document.createElement('div');
-            stockElement.className = 'stock-item';
-            stockElement.innerHTML = `
-                <div class="stock-info">
-                    <h3>${stock.name}</h3>
-                    <p>Symbol: ${stock.ticker}</p>
-                </div>
-                <button class="favorite-btn" onclick="toggleFavorite('${stock.ticker}')">
-                    <i class="far fa-heart"></i>
-                </button>
-            `;
-            resultsContainer.appendChild(stockElement);
-        });
-    } catch (error) {
-        resultsContainer.innerHTML = '<div class="error">Error fetching data. Please try again later.</div>';
-        console.error('Error:', error);
-    }
-}
-
-// Функция для добавления/удаления из избранного
+// Function to toggle favorite status
 function toggleFavorite(ticker) {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    if (!currentUser) return;
-
-    const favorites = JSON.parse(localStorage.getItem('favorites') || '{}');
-    if (!favorites[currentUser.username]) {
-        favorites[currentUser.username] = [];
-    }
-
-    const userFavorites = favorites[currentUser.username];
-    const index = userFavorites.indexOf(ticker);
-
+    const favorites = JSON.parse(localStorage.getItem('sharedFavorites') || '[]');
+    const index = favorites.findIndex(stock => stock.symbol === ticker);
+    
     if (index === -1) {
-        userFavorites.push(ticker);
+        // Add to favorites
+        const stockData = testStocks.find(s => s.symbol === ticker);
+        favorites.push({ 
+            symbol: ticker, 
+            name: stockData ? stockData.name : ticker 
+        });
     } else {
-        userFavorites.splice(index, 1);
+        // Remove from favorites
+        favorites.splice(index, 1);
     }
-
-    localStorage.setItem('favorites', JSON.stringify(favorites));
+    
+    localStorage.setItem('sharedFavorites', JSON.stringify(favorites));
     updateFavoriteButton(ticker);
 }
 
-// Функция для обновления состояния кнопки избранного
+// Function to update favorite button state
 function updateFavoriteButton(ticker) {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    if (!currentUser) return;
-
-    const favorites = JSON.parse(localStorage.getItem('favorites') || '{}');
-    const userFavorites = favorites[currentUser.username] || [];
-    const isFavorite = userFavorites.includes(ticker);
-
-    const button = document.querySelector(`.favorite-btn[onclick="toggleFavorite('${ticker}')"]`);
-    if (button) {
-        button.innerHTML = `<i class="${isFavorite ? 'fas' : 'far'} fa-heart"></i>`;
+    const favorites = JSON.parse(localStorage.getItem('sharedFavorites') || '[]');
+    const isFavorite = favorites.some(stock => stock.symbol === ticker);
+    
+    const favoriteButton = document.querySelector(`[data-ticker="${ticker}"] .favorite-button`);
+    if (favoriteButton) {
+        favoriteButton.innerHTML = isFavorite ? 
+            '<i class="fas fa-star"></i>' : 
+            '<i class="far fa-star"></i>';
     }
 }
 
-// Функция для выхода из аккаунта
-function logout() {
-    // Удаляем данные текущего пользователя
-    localStorage.removeItem('currentUser');
-    // Перенаправляем на страницу входа
-    window.location.href = 'login.html';
+// Function to handle search input
+function handleSearchInput(event) {
+    const query = event.target.value.trim();
+    const suggestionsContainer = document.getElementById('searchSuggestions');
+    
+    if (!query) {
+        suggestionsContainer.style.display = 'none';
+        return;
+    }
+
+    // Filter stocks based on query
+    const suggestions = testStocks.filter(stock => 
+        stock.symbol.toLowerCase().includes(query.toLowerCase()) || 
+        stock.name.toLowerCase().includes(query.toLowerCase())
+    );
+
+    if (suggestions.length === 0) {
+        suggestionsContainer.style.display = 'none';
+        return;
+    }
+
+    // Display suggestions
+    suggestionsContainer.innerHTML = '';
+    suggestions.forEach(stock => {
+        const suggestionItem = document.createElement('div');
+        suggestionItem.className = 'suggestion-item';
+        suggestionItem.innerHTML = `
+            <div class="suggestion-info">
+                <div class="suggestion-symbol">${stock.symbol}</div>
+                <div class="suggestion-name">${stock.name}</div>
+                <div class="suggestion-sector">${stock.sector}</div>
+            </div>
+            <div class="suggestion-price">
+                $${stock.price.toFixed(2)}
+            </div>
+        `;
+        suggestionItem.addEventListener('click', () => selectStock(stock));
+        suggestionsContainer.appendChild(suggestionItem);
+    });
+
+    suggestionsContainer.style.display = 'block';
+}
+
+// Function to handle clicks outside of search
+function handleClickOutside(event) {
+    const searchContainer = document.querySelector('.search-container');
+    const suggestionsContainer = document.getElementById('searchSuggestions');
+    
+    if (!searchContainer.contains(event.target)) {
+        suggestionsContainer.style.display = 'none';
+    }
+}
+
+// Function to select a stock
+function selectStock(stock) {
+    const selectedStocksContainer = document.getElementById('selectedStocks');
+    const searchInput = document.getElementById('searchInput');
+    const suggestionsContainer = document.getElementById('searchSuggestions');
+
+    // Check if stock is already selected
+    if (document.querySelector(`[data-symbol="${stock.symbol}"]`)) {
+        return;
+    }
+
+    // Check if in favorites
+    const favorites = JSON.parse(localStorage.getItem('sharedFavorites') || '[]');
+    const isFavorite = favorites.some(s => s.symbol === stock.symbol);
+
+    // Create selected stock element
+    const selectedStock = document.createElement('div');
+    selectedStock.className = 'selected-stock';
+    selectedStock.setAttribute('data-symbol', stock.symbol);
+    selectedStock.innerHTML = `
+        <div class="selected-stock-info">
+            <div class="selected-stock-symbol">${stock.symbol}</div>
+            <div class="selected-stock-name">${stock.name}</div>
+            <div class="selected-stock-price">
+                <span class="price">$${stock.price.toFixed(2)}</span>
+                <span class="change ${stock.change >= 0 ? 'positive' : 'negative'}">
+                    ${stock.change >= 0 ? '+' : ''}${stock.change}%
+                </span>
+            </div>
+        </div>
+        <button class="favorite-button" onclick="toggleFavoriteFromSelected('${stock.symbol}', this)">
+            <i class="${isFavorite ? 'fas' : 'far'} fa-heart"></i>
+        </button>
+        <button class="remove-selected" onclick="removeSelectedStock('${stock.symbol}')">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+
+    selectedStocksContainer.appendChild(selectedStock);
+    
+    // Clear search input and hide suggestions
+    searchInput.value = '';
+    suggestionsContainer.style.display = 'none';
+}
+
+// Add this function to handle favorite from selected
+function toggleFavoriteFromSelected(symbol, btn) {
+    const favorites = JSON.parse(localStorage.getItem('sharedFavorites') || '[]');
+    const index = favorites.findIndex(stock => stock.symbol === symbol);
+    let isFavorite = false;
+    if (index === -1) {
+        // Add to favorites
+        const stockData = testStocks.find(s => s.symbol === symbol);
+        favorites.push({ 
+            symbol: symbol, 
+            name: stockData ? stockData.name : symbol 
+        });
+        isFavorite = true;
+    } else {
+        // Remove from favorites
+        favorites.splice(index, 1);
+        isFavorite = false;
+    }
+    localStorage.setItem('sharedFavorites', JSON.stringify(favorites));
+    // Update heart icon
+    const icon = btn.querySelector('i');
+    if (icon) {
+        icon.className = isFavorite ? 'fas fa-heart' : 'far fa-heart';
+    }
+}
+
+// Function to remove selected stock
+function removeSelectedStock(symbol) {
+    const selectedStock = document.querySelector(`[data-symbol="${symbol}"]`);
+    if (selectedStock) {
+        selectedStock.remove();
+    }
 }
