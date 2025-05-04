@@ -1,5 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
 
+import { beforeEach, describe, expect, it } from "vitest";
+
 import { PreferencesService } from "./preferences.service.js";
 
 describe("PreferencesService", () => {
