@@ -25,7 +25,6 @@ export class PreferencesController {
 		}
 
 		const preferences = await this.preferences.getPreferences();
-		console.log(dto);
 		await this.preferences.setPreferences({ ...preferences, ...dto });
 	}
 }
