@@ -14,4 +14,8 @@ COPY --from=builder /app/backend/node_modules node_modules
 COPY --from=builder /app/backend/static static
 COPY --from=builder /app/backend/.yarn .yarn
 RUN corepack enable && corepack install
+
 ENTRYPOINT ["yarn", "node", "dist/src/main.js"]
+ENV APP_PORT=3000
+ENV NODE_ENV=production
+EXPOSE 3000
