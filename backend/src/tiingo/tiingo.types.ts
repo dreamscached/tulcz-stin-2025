@@ -1,4 +1,4 @@
-export class SearchResultsDto {
+export interface SearchResult {
 	ticker: string;
 	assetType: string;
 	countryCode: string;
