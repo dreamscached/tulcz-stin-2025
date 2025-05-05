@@ -8,7 +8,7 @@ import { ServeStaticModule } from "@nestjs/serve-static";
 import { AppController } from "./app.controller.js";
 import { AppService } from "./app.service.js";
 import { PreferencesModule } from "./preferences/preferences.module.js";
-import { TiingoModule } from "./tiingo/tiingo.module";
+import { TiingoModule } from "./tiingo/tiingo.module.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
