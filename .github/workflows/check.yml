@@ -21,21 +21,16 @@ jobs:
           cache-dependency-path: yarn.lock
 
       - name: Install dependencies
-        working-directory: backend
         run: yarn install
 
       - name: Run ESLint
-        working-directory: backend
         run: yarn lint
 
       - name: Run Vitest (Unit)
-        working-directory: backend
         run: yarn test
 
       - name: Run Vitest (End-to-End)
-        working-directory: backend
         run: yarn test:e2e
 
       - name: Run Vitest (Coverage)
-        working-directory: backend
         run: yarn test:cov && scripts/coverage.sh
