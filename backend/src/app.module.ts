@@ -8,13 +8,14 @@ import { ServeStaticModule } from "@nestjs/serve-static";
 import { AppController } from "./app.controller.js";
 import { AppService } from "./app.service.js";
 import { PreferencesModule } from "./preferences/preferences.module.js";
+import { TiingoModule } from "./tiingo/tiingo.module.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 @Module({
 	imports: [
-		ConfigModule.forRoot({ isGlobal: true, envFilePath: [".env", ".env.local"] }),
+		ConfigModule.forRoot({ isGlobal: true, envFilePath: [".env.local", ".env"] }),
 		ServeStaticModule.forRoot({
 			rootPath: join(__dirname, "..", "..", "static"),
 			serveStaticOptions: {
@@ -22,7 +23,8 @@ const __dirname = dirname(__filename);
 				maxAge: 3600e3 // 1 hour TTL
 			}
 		}),
-		PreferencesModule
+		PreferencesModule,
+		TiingoModule
 	],
 	controllers: [AppController],
 	providers: [AppService]

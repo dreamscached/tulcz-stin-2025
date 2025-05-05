@@ -30,6 +30,7 @@ export default defineConfig({
 			all: false,
 			provider: "v8",
 			include: ["src/**"],
+			exclude: ["src/**/*.{module,types}.ts"],
 			reporter: ["json-summary", "html"]
 		}
 	}
