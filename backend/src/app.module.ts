@@ -15,7 +15,7 @@ const __dirname = dirname(__filename);
 
 @Module({
 	imports: [
-		ConfigModule.forRoot({ isGlobal: true, envFilePath: [".env", ".env.local"] }),
+		ConfigModule.forRoot({ isGlobal: true, envFilePath: [".env.local", ".env"] }),
 		ServeStaticModule.forRoot({
 			rootPath: join(__dirname, "..", "..", "static"),
 			serveStaticOptions: {
