@@ -18,7 +18,7 @@ jobs:
           node-version: '23.x'
           check-latest: true
           cache: yarn
-          cache-dependency-path: backend/yarn.lock
+          cache-dependency-path: yarn.lock
 
       - name: Install dependencies
         working-directory: backend
