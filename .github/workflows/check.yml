@@ -2,8 +2,6 @@ name: Run code checks on commit
 
 on:
   push:
-    branches-ignore:
-      - master
 
 jobs:
   check_backend:

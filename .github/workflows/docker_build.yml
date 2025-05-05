@@ -2,8 +2,6 @@ name: Run Docker build check
 
 on:
   push:
-    branches-ignore:
-      - master
 
 jobs:
   build:
