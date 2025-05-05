@@ -14,18 +14,46 @@ Burzalupa is a full-stack application for tracking stock favorites. It includes:
 
 ---
 
-## 🛠 Project Structure
+## 🗂 Project Structure
 
 ```
 .
-├── backend/           # NestJS backend source
-│   ├── src/
-│   ├── .env           # Environment variables
-│   └── ...
-├── frontend/          # Static frontend (HTML/CSS/JS)
-├── static/            # Built frontend (copied from frontend/)
-├── Dockerfile         # Full build + runtime container
-├── docker-compose.yml
+├── src/                     # NestJS backend (modules, services, main app)
+│   ├── preferences/         # User preferences feature
+│   └── tiingo/              # Tiingo API integration
+├── static/                  # Static frontend (HTML/CSS/JS)
+├── scripts/                 # Utility scripts (e.g., coverage summary)
+├── files/                   # Preferences JSON storage
+├── .github/                 # CI workflows (Docker, tests, lint)
+├── Dockerfile               # Docker build instructions
+├── docker-compose.yml       # Compose for backend app
+├── vitest.config.ts         # Unit test config
+├── vitest-e2e.config.ts     # E2E test config
+```
+
+---
+
+## 🧪 Testing
+
+Run unit, e2e, and coverage tests:
+
+```bash
+yarn install
+yarn test           # Unit tests
+yarn test:e2e       # End-to-end tests
+yarn test:cov       # Coverage (HTML + summary)
+```
+
+To view HTML coverage report:
+
+```bash
+open coverage/index.html
+```
+
+Or print summary in CLI:
+
+```bash
+./scripts/coverage.sh
 ```
 
 ---
