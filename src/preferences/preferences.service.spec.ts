@@ -22,7 +22,7 @@ vi.mock("path", async () => {
 	};
 });
 
-describe("PreferencesService (strict mode)", () => {
+describe("PreferencesService", () => {
 	let service: PreferencesService;
 
 	let readFileMock: MockedFunction<typeof fs.readFile>;
