@@ -6,8 +6,6 @@ import { ConfigModule } from "@nestjs/config";
 import { ScheduleModule } from "@nestjs/schedule";
 import { ServeStaticModule } from "@nestjs/serve-static";
 
-import { AppController } from "./app.controller.js";
-import { AppService } from "./app.service.js";
 import { PreferencesModule } from "./preferences/preferences.module.js";
 import { TaskModule } from "./task/task.module.js";
 import { TiingoModule } from "./tiingo/tiingo.module.js";
@@ -29,8 +27,6 @@ const __dirname = dirname(__filename);
 		TiingoModule,
 		ScheduleModule.forRoot(),
 		TaskModule
-	],
-	controllers: [AppController],
-	providers: [AppService]
+	]
 })
 export class AppModule {}
