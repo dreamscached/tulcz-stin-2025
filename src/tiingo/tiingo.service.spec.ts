@@ -1,10 +1,21 @@
+import * as fs from "node:fs/promises";
+
 import { ConfigService } from "@nestjs/config";
 import { Test, TestingModule } from "@nestjs/testing";
 
-import { Mock, beforeEach, describe, expect, it, vi } from "vitest";
+import { Mock, MockedFunction, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { TiingoService } from "./tiingo.service.js";
 import { SearchResult, StockPrices } from "./tiingo.types.js";
+
+vi.mock("node:fs/promises", async () => {
+	const actual = await vi.importActual<typeof fs>("node:fs/promises");
+	return {
+		...actual,
+		readFile: vi.fn(),
+		writeFile: vi.fn()
+	};
+});
 
 describe("TiingoService", () => {
 	let service: TiingoService;
@@ -120,4 +131,108 @@ describe("TiingoService", () => {
 			expect(result).toEqual(mockData);
 		});
 	});
+
+	describe("getStockPricesHistory()", () => {
+		it("returns parsed JSON from file", async () => {
+			const mockData: StockPrices[] = [mockStockPrice()];
+			(fs.readFile as MockedFunction<typeof fs.readFile>).mockResolvedValueOnce(JSON.stringify(mockData));
+
+			const result = await service.getStockPricesHistory();
+			expect(result).toEqual(mockData);
+		});
+
+		it("returns empty array if file does not exist", async () => {
+			const error = Object.assign(new Error("not found"), { code: "ENOENT" });
+			(fs.readFile as MockedFunction<typeof fs.readFile>).mockRejectedValueOnce(error);
+
+			const result = await service.getStockPricesHistory();
+			expect(result).toEqual([]);
+		});
+
+		it("rethrows unknown error", async () => {
+			const error = Object.assign(new Error("access denied"), { code: "EACCES" });
+			(fs.readFile as MockedFunction<typeof fs.readFile>).mockRejectedValueOnce(error);
+
+			await expect(service.getStockPricesHistory()).rejects.toThrow("access denied");
+		});
+	});
+
+	describe("saveStockPricesHistory()", () => {
+		it("writes stock prices to file", async () => {
+			const data = [mockStockPrice()];
+			(fs.writeFile as MockedFunction<typeof fs.writeFile>).mockResolvedValueOnce();
+
+			await service.saveStockPricesHistory(data);
+
+			expect(fs.writeFile).toHaveBeenCalledWith(expect.any(String), JSON.stringify(data), {
+				encoding: "utf8"
+			});
+		});
+	});
+
+	describe("purgeOldStockPrices()", () => {
+		it("removes stock records older than 5 days", async () => {
+			const now = Date.now();
+			const old = new Date(now - 6 * 86400e3).toISOString();
+			const recent = new Date(now - 1 * 86400e3).toISOString();
+
+			(fs.readFile as MockedFunction<typeof fs.readFile>).mockResolvedValueOnce(
+				JSON.stringify([
+					{ ...mockStockPrice(), timestamp: old },
+					{ ...mockStockPrice(), timestamp: recent }
+				])
+			);
+
+			(fs.writeFile as MockedFunction<typeof fs.writeFile>).mockResolvedValueOnce();
+
+			await service.purgeOldStockPrices();
+
+			const written = JSON.parse(
+				(fs.writeFile as MockedFunction<typeof fs.writeFile>).mock.calls[0][1] as string
+			) as StockPrices[];
+			expect(written).toHaveLength(1);
+			expect(written[0].timestamp).toBe(recent);
+		});
+	});
+
+	describe("updateStockPricesHistory()", () => {
+		it("appends new prices and purges old history", async () => {
+			const newPrices = [mockStockPrice()];
+
+			service.getStockPrices = vi.fn().mockResolvedValue(newPrices);
+			service.getStockPricesHistory = vi.fn().mockResolvedValue([]);
+			service.saveStockPricesHistory = vi.fn().mockResolvedValue(undefined);
+			service.purgeOldStockPrices = vi.fn().mockResolvedValue(undefined);
+
+			await service.updateStockPricesHistory(["AAPL"]);
+
+			/* eslint-disable @typescript-eslint/unbound-method */
+			expect(service.getStockPrices).toHaveBeenCalledWith(["AAPL"]);
+			expect(service.saveStockPricesHistory).toHaveBeenCalledWith(newPrices);
+			expect(service.purgeOldStockPrices).toHaveBeenCalled();
+			/* eslint-enable @typescript-eslint/unbound-method */
+		});
+	});
 });
+
+function mockStockPrice(): StockPrices {
+	return {
+		ticker: "AAPL",
+		timestamp: new Date().toISOString(),
+		quoteTimestamp: null,
+		lastSaleTimestamp: null,
+		last: 190,
+		lastSize: null,
+		tngoLast: 190,
+		prevClose: 189,
+		open: 190,
+		high: 192,
+		low: 188,
+		mid: 190,
+		volume: 1000000,
+		bidSize: null,
+		bidPrice: null,
+		askSize: null,
+		askPrice: null
+	};
+}
