@@ -36,7 +36,7 @@ export default defineConfig({
 				// The listed pattern excludes only files that aren't important
 				// for coverage, and some of which do not contain any executable
 				// code at all, just declarative NestJS DSL
-				"src/**/*.{module,types,e2e-spec,dto}.ts"
+				"src/**/*.{module,types,e2e-spec,dto,entity}.ts"
 			],
 			reporter: ["text", "json-summary", "html"]
 		}
