@@ -1,25 +1,142 @@
-// Test stock data
+// Updated testStocks with historical prices
 const testStocks = [
-    { symbol: 'AAPL', name: 'Apple Inc.', price: 175.04, change: 1.2, sector: 'Technology' },
-    { symbol: 'MSFT', name: 'Microsoft Corporation', price: 415.32, change: 0.8, sector: 'Technology' },
-    { symbol: 'GOOGL', name: 'Alphabet Inc.', price: 142.56, change: -0.5, sector: 'Technology' },
-    { symbol: 'AMZN', name: 'Amazon.com Inc.', price: 178.75, change: 1.5, sector: 'Consumer Cyclical' },
-    { symbol: 'TSLA', name: 'Tesla Inc.', price: 177.77, change: -2.1, sector: 'Automotive' },
-    { symbol: 'META', name: 'Meta Platforms Inc.', price: 485.58, change: 2.3, sector: 'Technology' },
-    { symbol: 'NVDA', name: 'NVIDIA Corporation', price: 875.28, change: 3.2, sector: 'Technology' },
-    { symbol: 'JPM', name: 'JPMorgan Chase & Co.', price: 195.63, change: 0.4, sector: 'Financial Services' },
-    { symbol: 'V', name: 'Visa Inc.', price: 280.33, change: -0.3, sector: 'Financial Services' },
-    { symbol: 'WMT', name: 'Walmart Inc.', price: 60.11, change: 0.7, sector: 'Consumer Defensive' },
-    { symbol: 'JNJ', name: 'Johnson & Johnson', price: 157.95, change: -0.2, sector: 'Healthcare' },
-    { symbol: 'PG', name: 'Procter & Gamble Co.', price: 160.84, change: 0.5, sector: 'Consumer Defensive' },
-    { symbol: 'MA', name: 'Mastercard Inc.', price: 475.96, change: 1.1, sector: 'Financial Services' },
-    { symbol: 'HD', name: 'Home Depot Inc.', price: 362.35, change: -0.8, sector: 'Consumer Cyclical' },
-    { symbol: 'BAC', name: 'Bank of America Corp.', price: 37.49, change: 0.6, sector: 'Financial Services' }
+    {
+        symbol: 'AAPL', name: 'Apple Inc.', sector: 'Technology',
+        prices: [179, 177, 176, 175, 174]
+    },
+    {
+        symbol: 'MSFT', name: 'Microsoft Corporation', sector: 'Technology',
+        prices: [417, 416, 415, 414, 413]
+    },
+    {
+        symbol: 'GOOGL', name: 'Alphabet Inc.', sector: 'Technology',
+        prices: [144, 143, 144, 143, 142]
+    },
+    {
+        symbol: 'AMZN', name: 'Amazon.com Inc.', sector: 'Consumer Cyclical',
+        prices: [180, 179, 178, 179, 178]
+    },
+    {
+        symbol: 'TSLA', name: 'Tesla Inc.', sector: 'Automotive',
+        prices: [178, 177, 176, 177, 178]
+    }
 ];
+
+function filterLast3DaysDecreasing(stocks) {
+    return stocks.filter(stock => {
+        const p = stock.prices;
+        return p.length >= 3 && p[p.length - 3] > p[p.length - 2] && p[p.length - 2] > p[p.length - 1];
+    });
+}
+
+function filterAtLeast3DecreasingIn5Days(stocks) {
+    return stocks.filter(stock => {
+        const p = stock.prices;
+        if (p.length < 5) return false;
+        let dec = 0;
+        for (let i = 1; i < p.length; i++) {
+            if (p[i] < p[i - 1]) dec++;
+        }
+        return dec >= 2;
+    });
+}
+
+function applyFavoritesFilter(type) {
+    const favorites = JSON.parse(localStorage.getItem('sharedFavorites') || '[]');
+    const enrichedFavorites = favorites.map(fav => {
+        const full = testStocks.find(s => s.symbol === fav.symbol);
+        return full ? full : fav;
+    }).filter(s => s.prices);
+
+    let filtered;
+    if (type === 'last3') {
+        filtered = filterLast3DaysDecreasing(enrichedFavorites);
+    } else if (type === '3of5') {
+        filtered = filterAtLeast3DecreasingIn5Days(enrichedFavorites);
+    }
+
+    displayFavorites(filtered);
+}
+
+function displayFavorites(stocks) {
+    const favoritesList = document.getElementById('favoritesList');
+    if (!favoritesList) return;
+    favoritesList.innerHTML = '';
+
+    if (!stocks.length) {
+        favoritesList.innerHTML = '<p class="no-favorites">No matching favorites found.</p>';
+        return;
+    }
+
+    stocks.forEach(stock => {
+        const favoriteItem = document.createElement('div');
+        favoriteItem.className = 'favorite-item';
+        favoriteItem.innerHTML = `
+            <div class="stock-info">
+                <h4>${stock.symbol}</h4>
+                <p>${stock.name}</p>
+                <div class="stock-price">
+                    <span class="price">$${stock.prices[stock.prices.length - 1].toFixed(2)}</span>
+                </div>
+            </div>
+            <button class="remove-favorite" onclick="removeFavorite('${stock.symbol}')">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        favoritesList.appendChild(favoriteItem);
+    });
+}
+
+function fetchServerStocks() {
+    // Эмуляция получения данных с сервера
+    const serverStocks = [
+        { symbol: 'NFLX', name: 'Netflix Inc.', sector: 'Communication', prices: [420, 418, 417, 416, 415] },
+        { symbol: 'DIS', name: 'Walt Disney Co.', sector: 'Communication', prices: [95, 94, 93, 92, 91] }
+    ];
+
+    displayFavorites(serverStocks);
+}
+
+// Add filter buttons only on favorites page
+window.addEventListener('DOMContentLoaded', () => {
+    if (window.location.pathname.includes('favorites.html')) {
+        const container = document.querySelector('.favorites-container');
+
+        const filterBar = document.createElement('div');
+        filterBar.className = 'filter-buttons';
+        filterBar.innerHTML = `
+            <style>
+                .filter-buttons {
+                    margin-bottom: 1rem;
+                }
+                .filter-buttons button {
+                    background-color: #328E6E;
+                    color: white;
+                    border: none;
+                    padding: 10px 16px;
+                    margin-right: 10px;
+                    border-radius: 5px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    transition: background-color 0.3s;
+                }
+                .filter-buttons button:hover {
+                    background-color: #28775B;
+                }
+            </style>
+            <button onclick="applyFavoritesFilter('last3')">Poslední 3 dny poklesu</button>
+            <button onclick="applyFavoritesFilter('3of5')">2 a více dnů poklesu</button>
+            <button onclick="fetchServerStocks()">Získat ze serveru</button>
+        `;
+        container.prepend(filterBar);
+
+        loadFavorites();
+    }
+});
 
 // Initialize shared favorites on page load
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize shared favorites if they don't exist
+    // Инициализация favorites
     if (!localStorage.getItem('sharedFavorites')) {
         const initialFavorites = [
             { symbol: 'AAPL', name: 'Apple Inc.' },
@@ -31,17 +148,30 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('sharedFavorites', JSON.stringify(initialFavorites));
     }
 
-    // Load favorites if we're on the favorites page
+    // Если мы на странице избранного
     if (window.location.pathname.includes('favorites.html')) {
         loadFavorites();
     }
 
-    // Initialize search input event listeners
+    // Инициализация поля поиска
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
-        searchInput.addEventListener('input', handleSearchInput);
-        searchInput.addEventListener('focus', handleSearchInput);
-        document.addEventListener('click', handleClickOutside);
+        searchInput.addEventListener('input', handleSearchInput); 
+        searchInput.addEventListener('focus', handleSearchInput); 
+        searchInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                const firstSuggestion = document.querySelector('.suggestion-item');
+                if (firstSuggestion) firstSuggestion.click();
+            }
+        });
+    }
+});
+
+document.addEventListener('click', function(event) {
+    const searchContainer = document.querySelector('.search-container');
+    const suggestionsContainer = document.getElementById('searchSuggestions');
+    if (!searchContainer.contains(event.target)) {
+        suggestionsContainer.style.display = 'none';
     }
 });
 
@@ -129,20 +259,19 @@ function updateFavoriteButton(ticker) {
     }
 }
 
-// Function to handle search input
 function handleSearchInput(event) {
-    const query = event.target.value.trim();
+    const query = event.target.value.trim().toLowerCase();
     const suggestionsContainer = document.getElementById('searchSuggestions');
-    
+
     if (!query) {
         suggestionsContainer.style.display = 'none';
+        suggestionsContainer.innerHTML = '';
         return;
     }
 
-    // Filter stocks based on query
-    const suggestions = testStocks.filter(stock => 
-        stock.symbol.toLowerCase().includes(query.toLowerCase()) || 
-        stock.name.toLowerCase().includes(query.toLowerCase())
+    const suggestions = testStocks.filter(stock =>
+        stock.symbol.toLowerCase().includes(query) ||
+        stock.name.toLowerCase().includes(query)
     );
 
     if (suggestions.length === 0) {
@@ -150,22 +279,23 @@ function handleSearchInput(event) {
         return;
     }
 
-    // Display suggestions
     suggestionsContainer.innerHTML = '';
     suggestions.forEach(stock => {
         const suggestionItem = document.createElement('div');
         suggestionItem.className = 'suggestion-item';
         suggestionItem.innerHTML = `
-            <div class="suggestion-info">
-                <div class="suggestion-symbol">${stock.symbol}</div>
-                <div class="suggestion-name">${stock.name}</div>
-                <div class="suggestion-sector">${stock.sector}</div>
-            </div>
-            <div class="suggestion-price">
-                $${stock.price.toFixed(2)}
-            </div>
+            <div class="suggestion-symbol">${stock.symbol}</div>
+            <div class="suggestion-name">${stock.name}</div>
         `;
-        suggestionItem.addEventListener('click', () => selectStock(stock));
+        suggestionItem.addEventListener('click', () => {
+            selectStock({
+                symbol: stock.symbol,
+                name: stock.name,
+                price: stock.prices?.at(-1) || stock.price,
+                change: 0,
+                sector: stock.sector
+            });
+        });
         suggestionsContainer.appendChild(suggestionItem);
     });
 
@@ -177,7 +307,7 @@ function handleClickOutside(event) {
     const searchContainer = document.querySelector('.search-container');
     const suggestionsContainer = document.getElementById('searchSuggestions');
     
-    if (!searchContainer.contains(event.target)) {
+    if (!searchContainer.contains(event.target) && !event.target.classList.contains('suggestion-item')) {
         suggestionsContainer.style.display = 'none';
     }
 }
