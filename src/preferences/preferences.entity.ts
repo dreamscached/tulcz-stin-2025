@@ -1,10 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 
-import { IsArray, IsString } from "class-validator";
-
-export class CreatePreferencesDto {
-	@IsArray()
-	@IsString({ each: true })
+export class Preferences {
 	@ApiProperty({
 		description: "Favorite, monitored stock tickers",
 		isArray: true,

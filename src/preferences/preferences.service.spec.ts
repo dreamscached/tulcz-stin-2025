@@ -4,8 +4,8 @@ import * as path from "node:path";
 
 import { type MockedFunction, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { Preferences } from "./preferences.entity.js";
 import { PreferencesService } from "./preferences.service.js";
-import { Preferences } from "./preferences.types.js";
 
 vi.mock("fs/promises", () => ({
 	readFile: vi.fn(),
