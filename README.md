@@ -93,12 +93,6 @@ To view HTML coverage report:
 open coverage/index.html
 ```
 
-Or print summary in CLI:
-
-```bash
-./scripts/coverage.sh
-```
-
 ---
 
 ## 🌍 Environment Variables

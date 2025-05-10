@@ -29,9 +29,16 @@ export default defineConfig({
 			enabled: false,
 			all: false,
 			provider: "v8",
-			include: ["src/**"],
-			exclude: ["src/**/*.{module,types}.ts"],
-			reporter: ["json-summary", "html"]
+			include: ["src/**/*.ts"],
+			exclude: [
+				// Bootstrap code
+				"src/main.ts",
+				// The listed pattern excludes only files that aren't important
+				// for coverage, and some of which do not contain any executable
+				// code at all, just declarative NestJS DSL
+				"src/**/*.{module,types,e2e-spec,dto}.ts"
+			],
+			reporter: ["text", "json-summary", "html"]
 		}
 	}
 });

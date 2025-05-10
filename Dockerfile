@@ -1,11 +1,11 @@
-FROM node:23-alpine AS builder
+FROM node:24-alpine AS builder
 WORKDIR /app
 COPY . /app
 RUN corepack enable &&\
     yarn install && yarn build &&\
     yarn workspaces focus --production
 
-FROM node:23-alpine
+FROM node:24-alpine
 WORKDIR /app
 COPY --from=builder /app/dist dist
 COPY --from=builder /app/package.json /app/yarn.lock /app/.yarnrc.yml .
