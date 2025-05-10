@@ -73,6 +73,10 @@ describe("TiingoService", () => {
 	});
 
 	describe("getStockPrices()", () => {
+		it("throws if tickers array is empty", async () => {
+			await expect(service.getStockPrices([])).rejects.toThrow("At least one ticker is required");
+		});
+
 		it("calls the prices endpoint and returns stock prices", async () => {
 			const mockPrices: StockPrices[] = [
 				{
