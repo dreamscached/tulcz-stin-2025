@@ -3,6 +3,7 @@ import { Module } from "@nestjs/common";
 import { TiingoService } from "./tiingo.service.js";
 
 @Module({
-	providers: [TiingoService]
+	providers: [TiingoService],
+	exports: [TiingoService]
 })
 export class TiingoModule {}
