@@ -40,10 +40,6 @@ describe("TaskService", () => {
 		service = module.get<TaskService>(TaskService);
 	});
 
-	it("should be defined", () => {
-		expect(service).toBeDefined();
-	});
-
 	describe("hourlyStockPricesHistoryUpdate()", () => {
 		it("does nothing if preferences file does not exist", async () => {
 			preferencesMock.hasPreferences.mockResolvedValueOnce(false);
