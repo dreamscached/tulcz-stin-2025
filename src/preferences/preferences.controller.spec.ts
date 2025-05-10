@@ -5,8 +5,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { UpdatePreferencesDto } from "./dto/update-preferences.dto.js";
 import { PreferencesController } from "./preferences.controller.js";
+import { Preferences } from "./preferences.entity.js";
 import { PreferencesService } from "./preferences.service.js";
-import { Preferences } from "./preferences.types.js";
 
 describe("PreferencesController", () => {
 	let controller: PreferencesController;

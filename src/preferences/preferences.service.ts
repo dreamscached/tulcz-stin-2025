@@ -4,7 +4,7 @@ import { dirname } from "node:path";
 import { Injectable } from "@nestjs/common";
 
 import { PREFERENCES_PATH } from "./preferences.constants.js";
-import { Preferences } from "./preferences.types.js";
+import { Preferences } from "./preferences.entity.js";
 
 @Injectable()
 export class PreferencesService {
