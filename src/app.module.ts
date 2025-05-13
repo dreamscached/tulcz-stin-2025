@@ -24,7 +24,11 @@ const __dirname = dirname(__filename);
 			useFactory: (config: ConfigService) => ({
 				pinoHttp: {
 					level: config.getOrThrow("NODE_ENV") !== "production" ? "trace" : "info",
-					transport: config.getOrThrow("NODE_ENV") !== "production" ? { target: "pino-pretty" } : undefined
+					transport: config.getOrThrow("NODE_ENV") !== "production" ? { target: "pino-pretty" } : undefined,
+					formatters: {
+						// Keep label as string in JSON log
+						level: (label: string) => ({ level: label })
+					}
 				}
 			})
 		}),
