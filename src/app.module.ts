@@ -8,6 +8,7 @@ import { ServeStaticModule } from "@nestjs/serve-static";
 
 import { LoggerModule } from "nestjs-pino";
 
+import { LogModule } from "./log/log.module.js";
 import { PreferencesModule } from "./preferences/preferences.module.js";
 import { TaskModule } from "./task/task.module.js";
 import { TiingoModule } from "./tiingo/tiingo.module.js";
@@ -42,7 +43,8 @@ const __dirname = dirname(__filename);
 		PreferencesModule,
 		TiingoModule,
 		ScheduleModule.forRoot(),
-		TaskModule
+		TaskModule,
+		LogModule
 	]
 })
 export class AppModule {}
