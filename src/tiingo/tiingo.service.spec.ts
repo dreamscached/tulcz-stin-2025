@@ -3,6 +3,7 @@ import * as fs from "node:fs/promises";
 import { ConfigService } from "@nestjs/config";
 import { Test, TestingModule } from "@nestjs/testing";
 
+import { PinoLogger } from "nestjs-pino";
 import { Mock, MockedFunction, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { TiingoService } from "./tiingo.service.js";
@@ -30,6 +31,14 @@ describe("TiingoService", () => {
 		})
 	};
 
+	const mockLogger = {
+		debug: vi.fn(),
+		info: vi.fn(),
+		warn: vi.fn(),
+		error: vi.fn(),
+		setContext: vi.fn()
+	};
+
 	let fetchMock: Mock;
 
 	beforeEach(async () => {
@@ -37,7 +46,11 @@ describe("TiingoService", () => {
 		global.fetch = fetchMock as unknown as typeof fetch;
 
 		const module: TestingModule = await Test.createTestingModule({
-			providers: [TiingoService, { provide: ConfigService, useValue: mockConfigService }]
+			providers: [
+				TiingoService,
+				{ provide: ConfigService, useValue: mockConfigService },
+				{ provide: PinoLogger, useValue: mockLogger }
+			]
 		}).compile();
 
 		service = module.get(TiingoService);
