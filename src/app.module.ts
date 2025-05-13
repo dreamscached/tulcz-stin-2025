@@ -7,8 +7,11 @@ import { ScheduleModule } from "@nestjs/schedule";
 import { ServeStaticModule } from "@nestjs/serve-static";
 
 import { LoggerModule } from "nestjs-pino";
+import { multistream } from "pino";
 
 import { LogModule } from "./log/log.module.js";
+import { LogService } from "./log/log.service.js";
+import { createPinoWebSocketTransport } from "./log/log.transport.js";
 import { PreferencesModule } from "./preferences/preferences.module.js";
 import { TaskModule } from "./task/task.module.js";
 import { TiingoModule } from "./tiingo/tiingo.module.js";
@@ -20,12 +23,16 @@ const __dirname = dirname(__filename);
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true, envFilePath: [".env.local", ".env"] }),
 		LoggerModule.forRootAsync({
-			imports: [ConfigModule],
-			inject: [ConfigService],
-			useFactory: (config: ConfigService) => ({
+			imports: [ConfigModule, LogModule],
+			inject: [ConfigService, LogService],
+			useFactory: (config: ConfigService, logService: LogService) => ({
 				pinoHttp: {
 					level: config.getOrThrow("NODE_ENV") !== "production" ? "trace" : "info",
 					transport: config.getOrThrow("NODE_ENV") !== "production" ? { target: "pino-pretty" } : undefined,
+					stream: multistream([
+						{ stream: process.stdout },
+						{ stream: createPinoWebSocketTransport(logService) }
+					]),
 					formatters: {
 						// Keep label as string in JSON log
 						level: (label: string) => ({ level: label })

@@ -6,6 +6,6 @@ import { LogService } from "./log.service.js";
 
 @Module({
 	providers: [LogGateway, LogService, ...logBufferProviders],
-	exports: [LogGateway]
+	exports: [LogGateway, LogService]
 })
 export class LogModule {}
