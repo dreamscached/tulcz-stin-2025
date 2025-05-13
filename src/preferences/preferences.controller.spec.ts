@@ -1,6 +1,7 @@
 import { NotFoundException } from "@nestjs/common";
 import { Test, TestingModule } from "@nestjs/testing";
 
+import { PinoLogger } from "nestjs-pino";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { UpdatePreferencesDto } from "./dto/update-preferences.dto.js";
@@ -17,6 +18,14 @@ describe("PreferencesController", () => {
 		setPreferences: ReturnType<typeof vi.fn>;
 	};
 
+	const mockLogger = {
+		debug: vi.fn(),
+		info: vi.fn(),
+		warn: vi.fn(),
+		error: vi.fn(),
+		setContext: vi.fn()
+	};
+
 	const mockPrefs: Preferences = {
 		favoriteTickers: ["AAPL", "GOOG"]
 	};
@@ -31,10 +40,8 @@ describe("PreferencesController", () => {
 		const module: TestingModule = await Test.createTestingModule({
 			controllers: [PreferencesController],
 			providers: [
-				{
-					provide: PreferencesService,
-					useValue: mockPreferencesService
-				}
+				{ provide: PreferencesService, useValue: mockPreferencesService },
+				{ provide: PinoLogger, useValue: mockLogger }
 			]
 		}).compile();
 
@@ -80,6 +87,14 @@ describe("PreferencesController", () => {
 			await expect(controller.updatePreferences({ favoriteTickers: ["NFLX"] })).rejects.toThrowError(
 				NotFoundException
 			);
+		});
+
+		it("throws if setPreferences fails", async () => {
+			mockPreferencesService.hasPreferences.mockResolvedValueOnce(true);
+			mockPreferencesService.getPreferences.mockResolvedValueOnce(mockPrefs);
+			mockPreferencesService.setPreferences.mockRejectedValueOnce(new Error("disk full"));
+
+			await expect(controller.updatePreferences({ favoriteTickers: ["TSLA"] })).rejects.toThrow("disk full");
 		});
 	});
 });
