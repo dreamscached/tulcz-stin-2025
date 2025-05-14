@@ -32,8 +32,8 @@ const __dirname = dirname(__filename);
 						{
 							stream:
 								config.getOrThrow("NODE_ENV") !== "production"
-									? process.stdout // JSON logging in production
-									: (await import("pino-pretty")).PinoPretty() // Pretty output in development
+									? (await import("pino-pretty")).PinoPretty() // Pretty output in development
+									: process.stdout // JSON logging in production
 						},
 						{ stream: createPinoWebSocketTransport(log) } // Push log to buffer & broadcast over WS
 					]),
