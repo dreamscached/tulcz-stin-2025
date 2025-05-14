@@ -1,4 +1,4 @@
-import { Body, Controller, Get, NotFoundException, Patch } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, NotFoundException, Patch } from "@nestjs/common";
 import { ApiBody, ApiResponse } from "@nestjs/swagger";
 
 import { UpdatePreferencesDto } from "./dto/update-preferences.dto.js";
@@ -9,7 +9,7 @@ import { PreferencesService } from "./preferences.service.js";
 export class PreferencesController {
 	constructor(private readonly preferences: PreferencesService) {}
 
-	@Get("/")
+	@Get()
 	@ApiResponse({ type: Preferences, status: 200, description: "Preferences were successfully fetched from storage" })
 	@ApiResponse({ status: 404, description: "Preferences were not initialized" })
 	async readPreferences(): Promise<Preferences> {
@@ -21,9 +21,10 @@ export class PreferencesController {
 		return await this.preferences.getPreferences();
 	}
 
-	@Patch("/")
+	@Patch()
+	@HttpCode(204)
 	@ApiBody({ type: UpdatePreferencesDto })
-	@ApiResponse({ status: 201, description: "Preferences were updated successfully" })
+	@ApiResponse({ status: 204, description: "Preferences were updated successfully" })
 	@ApiResponse({ status: 404, description: "Preferences were not initialized" })
 	async updatePreferences(@Body() dto: UpdatePreferencesDto): Promise<void> {
 		const exists = await this.preferences.hasPreferences();
