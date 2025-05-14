@@ -8,7 +8,6 @@ import { ServeStaticModule } from "@nestjs/serve-static";
 
 import { LoggerModule } from "nestjs-pino";
 import { multistream } from "pino";
-import { PinoPretty } from "pino-pretty";
 
 import { LogModule } from "./log/log.module.js";
 import { LogService } from "./log/log.service.js";
@@ -26,12 +25,17 @@ const __dirname = dirname(__filename);
 		LoggerModule.forRootAsync({
 			imports: [ConfigModule, LogModule],
 			inject: [ConfigService, LogService],
-			useFactory: (config: ConfigService, logService: LogService) => ({
+			useFactory: async (config: ConfigService, log: LogService) => ({
 				pinoHttp: {
 					level: config.getOrThrow("NODE_ENV") !== "production" ? "trace" : "info",
 					stream: multistream([
-						{ stream: config.getOrThrow("NODE_ENV") !== "production" ? process.stdout : PinoPretty() },
-						{ stream: createPinoWebSocketTransport(logService) }
+						{
+							stream:
+								config.getOrThrow("NODE_ENV") !== "production"
+									? process.stdout // JSON logging in production
+									: (await import("pino-pretty")).PinoPretty() // Pretty output in development
+						},
+						{ stream: createPinoWebSocketTransport(log) } // Push log to buffer & broadcast over WS
 					]),
 					formatters: {
 						// Keep label as string in JSON log
