@@ -62,4 +62,15 @@ describe("LogGateway", () => {
 			/* eslint-enable @typescript-eslint/unbound-method */
 		});
 	});
+
+	describe("handleDisconnect", () => {
+		it("should remove client from the set", () => {
+			gateway["clients"].add(clientMock);
+			expect(gateway["clients"].has(clientMock)).toBe(true);
+
+			gateway.handleDisconnect(clientMock);
+
+			expect(gateway["clients"].has(clientMock)).toBe(false);
+		});
+	});
 });
