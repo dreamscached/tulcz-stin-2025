@@ -37,7 +37,7 @@ export class TaskService {
 		this.logger.info("Stock price history updated");
 	}
 
-	@Cron("0 0 * * *")
+	@Cron("0 0 * * 1-5") // except weekends
 	async dailyTickerUpdate() {
 		this.logger.info("Running scheduled task: dailyTickerUpdate");
 		this.logger.info("Updating ticker list");

@@ -75,3 +75,47 @@ function showLoading(container) {
 function showError(container, message) {
     container.innerHTML = `<div class="no-favorites">${message}</div>`;
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    setupTabs();
+    loadFavorites(); // Default tab
+});
+
+function setupTabs() {
+    const buttons = document.querySelectorAll(".tab-button");
+    buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+            buttons.forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
+
+            const filter = btn.dataset.filter;
+            loadFavorites(filter);
+        });
+    });
+}
+
+async function loadFavorites(filter = "recommended") {
+    const container = document.getElementById("favoritesList");
+    showLoading(container);
+
+    try {
+        let tickers = [];
+
+        if (filter === "3d") {
+            const res = await fetch("/search/filter/3d");
+            tickers = await res.json();
+        } else if (filter === "5d") {
+            const res = await fetch("/search/filter/5d");
+            tickers = await res.json();
+        } else {
+            const res = await fetch("/preferences");
+            const data = await res.json();
+            tickers = data.favoriteTickers || [];
+        }
+
+        renderFavorites(tickers);
+    } catch (error) {
+        console.error("Error loading favorites:", error);
+        showError(container, "Could not load favorites.");
+    }
+}
