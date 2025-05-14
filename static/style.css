@@ -437,3 +437,36 @@ main {
     padding: 8px 12px;
     cursor: pointer;
 }
+
+nav {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.log-entry {
+    background-color: #fff;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-family: monospace;
+    white-space: pre-wrap;
+}
+
+.log-entry .timestamp {
+    color: #999;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.log-entry .level {
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.log-entry.debug   { border-left: 5px solid #6c757d; }
+.log-entry.info    { border-left: 5px solid #17a2b8; }
+.log-entry.warn    { border-left: 5px solid #ffc107; }
+.log-entry.error   { border-left: 5px solid #dc3545; }
