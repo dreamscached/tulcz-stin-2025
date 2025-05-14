@@ -46,7 +46,7 @@ async function createInitialPreferences(app: INestApplication): Promise<void> {
 
 function setupSwagger(app: INestApplication): void {
 	const config = new DocumentBuilder()
-		.setTitle("Burzalupa API")
+		.setTitle("BurzaLupa API")
 		.setDescription("Swagger UI for Burzalupa API endpoints")
 		.setVersion("1.0.0")
 		.build();

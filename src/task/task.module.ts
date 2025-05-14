@@ -7,6 +7,7 @@ import { TaskService } from "./task.service.js";
 
 @Module({
 	imports: [TiingoModule, PreferencesModule],
+	exports: [TaskService],
 	providers: [TaskService]
 })
 export class TaskModule {}
