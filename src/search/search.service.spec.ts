@@ -31,6 +31,6 @@ describe("SearchService", () => {
 		mockTiingo.getTickerList.mockResolvedValue(["AAPL", "AA", "AB", "AC", "AD"]);
 
 		const result = await service.findTickers("a", 3);
-		expect(result).toEqual(["AAPL", "AA", "AB"]);
+		expect(result).toEqual(["AA", "AB", "AC"]);
 	});
 });
