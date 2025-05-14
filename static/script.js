@@ -259,47 +259,98 @@ function updateFavoriteButton(ticker) {
     }
 }
 
-function handleSearchInput(event) {
+async function handleSearchInput(event) {
     const query = event.target.value.trim().toLowerCase();
-    const suggestionsContainer = document.getElementById('searchSuggestions');
+    const suggestionsContainer = document.getElementById("searchSuggestions");
 
     if (!query) {
-        suggestionsContainer.style.display = 'none';
-        suggestionsContainer.innerHTML = '';
+        suggestionsContainer.style.display = "none";
+        suggestionsContainer.innerHTML = "";
         return;
     }
 
-    const suggestions = testStocks.filter(stock =>
-        stock.symbol.toLowerCase().includes(query) ||
-        stock.name.toLowerCase().includes(query)
-    );
+    try {
+        const response = await fetch(`/search?query=${encodeURIComponent(query)}`);
+        if (!response.ok) throw new Error("Failed to fetch search results");
 
-    if (suggestions.length === 0) {
-        suggestionsContainer.style.display = 'none';
-        return;
-    }
+        const results = await response.json();
 
-    suggestionsContainer.innerHTML = '';
-    suggestions.forEach(stock => {
-        const suggestionItem = document.createElement('div');
-        suggestionItem.className = 'suggestion-item';
-        suggestionItem.innerHTML = `
-            <div class="suggestion-symbol">${stock.symbol}</div>
-            <div class="suggestion-name">${stock.name}</div>
-        `;
-        suggestionItem.addEventListener('click', () => {
-            selectStock({
-                symbol: stock.symbol,
-                name: stock.name,
-                price: stock.prices?.at(-1) || stock.price,
-                change: 0,
-                sector: stock.sector
+        if (!Array.isArray(results) || results.length === 0) {
+            suggestionsContainer.style.display = "none";
+            return;
+        }
+
+        suggestionsContainer.innerHTML = "";
+        results.forEach(symbol => {
+            const suggestionItem = document.createElement("div");
+            suggestionItem.className = "suggestion-item";
+
+            const isFavorite = isTickerFavorite(symbol);
+
+            suggestionItem.innerHTML = `
+                <div class="suggestion-symbol">${symbol}</div>
+                <button class="favorite-button" data-symbol="${symbol}">
+                    <i class="${isFavorite ? 'fas' : 'far'} fa-heart"></i>
+                </button>
+            `;
+
+            // Add click to select
+            suggestionItem.addEventListener("click", () => {
+                selectStock({
+                    symbol,
+                    name: symbol,
+                    price: 0,
+                    change: 0,
+                    sector: ""
+                });
             });
-        });
-        suggestionsContainer.appendChild(suggestionItem);
-    });
 
-    suggestionsContainer.style.display = 'block';
+            // Add click to favorite
+            suggestionItem.querySelector(".favorite-button").addEventListener("click", (e) => {
+                e.stopPropagation();
+                toggleFavorite(symbol);
+                updateSearchHeart(symbol);
+                updatePreferencesOnServer(symbol);
+            });
+
+            suggestionsContainer.appendChild(suggestionItem);
+        });
+
+        suggestionsContainer.style.display = "block";
+    } catch (err) {
+        console.error("Search error:", err);
+        suggestionsContainer.style.display = "none";
+    }
+}
+
+function isTickerFavorite(symbol) {
+	const favorites = JSON.parse(localStorage.getItem('sharedFavorites') || '[]');
+	return favorites.some(stock => stock.symbol === symbol);
+}
+
+function updateSearchHeart(symbol) {
+	const btn = document.querySelector(`.favorite-button[data-symbol="${symbol}"] i`);
+	if (btn) {
+		btn.className = isTickerFavorite(symbol) ? 'fas fa-heart' : 'far fa-heart';
+	}
+}
+
+async function updatePreferencesOnServer(newSymbol) {
+	try {
+		const res = await fetch("/preferences");
+		if (!res.ok) throw new Error("Failed to load preferences");
+		const data = await res.json();
+		const tickers = new Set(data.favoriteTickers);
+		tickers.add(newSymbol);
+
+		await fetch("/preferences", {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ favoriteTickers: Array.from(tickers) })
+		});
+	} catch (e) {
+		console.error("Failed to update preferences", e);
+	}
 }
 
 // Function to handle clicks outside of search
@@ -334,13 +385,6 @@ function selectStock(stock) {
     selectedStock.innerHTML = `
         <div class="selected-stock-info">
             <div class="selected-stock-symbol">${stock.symbol}</div>
-            <div class="selected-stock-name">${stock.name}</div>
-            <div class="selected-stock-price">
-                <span class="price">$${stock.price.toFixed(2)}</span>
-                <span class="change ${stock.change >= 0 ? 'positive' : 'negative'}">
-                    ${stock.change >= 0 ? '+' : ''}${stock.change}%
-                </span>
-            </div>
         </div>
         <button class="favorite-button" onclick="toggleFavoriteFromSelected('${stock.symbol}', this)">
             <i class="${isFavorite ? 'fas' : 'far'} fa-heart"></i>

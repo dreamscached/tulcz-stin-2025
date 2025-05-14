@@ -36,4 +36,11 @@ export class TaskService {
 		await this.tiingo.updateStockPricesHistory(pref.favoriteTickers);
 		this.logger.info("Stock price history updated");
 	}
+
+	@Cron("0 0 * * *")
+	async dailyTickerUpdate() {
+		this.logger.info("Running scheduled task: dailyTickerUpdate");
+		this.logger.info("Updating ticker list");
+		await this.tiingo.updateTickerList();
+	}
 }

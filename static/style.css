@@ -527,3 +527,11 @@ nav {
     overflow-y: auto;
     padding-right: 0.5rem;
 }
+
+.suggestion-item .fa-star {
+    color: #ccc;
+}
+
+.suggestion-item .fas.fa-star {
+    color: #ffc107;
+}

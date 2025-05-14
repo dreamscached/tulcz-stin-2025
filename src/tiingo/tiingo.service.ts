@@ -5,7 +5,7 @@ import { ConfigService } from "@nestjs/config";
 
 import { PinoLogger } from "nestjs-pino";
 
-import { BASE_URL, STOCK_PRICES_HISTORY_PATH } from "./tiingo.constants.js";
+import { BASE_URL, STOCK_PRICES_HISTORY_PATH, TICKER_LIST_PATH } from "./tiingo.constants.js";
 import type { SearchResult, StockPrices } from "./tiingo.types.js";
 
 @Injectable()
@@ -21,16 +21,22 @@ export class TiingoService {
 		this.logger.debug({ query }, "Searching tickers");
 		const params = new URLSearchParams();
 		params.append("query", query);
-		return await this.request("/tiingo/utilities/search", params);
+		return this.request("/tiingo/utilities/search", params);
 	}
 
-	async getStockPrices(tickers: string[]): Promise<StockPrices[]> {
-		if (tickers.length === 0) {
-			throw new Error("At least one ticker is required");
+	async getStockPrices(tickers: string[] | "all"): Promise<StockPrices[]> {
+		if (tickers !== "all" && tickers.length === 0) {
+			throw new Error(`At least one ticker is required or the literal "all" to fetch all`);
 		}
-		this.logger.debug({ tickers }, "Fetching stock prices");
+
+		if (tickers === "all") {
+			this.logger.debug("Requesting all available stock prices");
+			return this.request(`/iex`);
+		}
+
+		this.logger.debug({ tickers }, "Fetching stock prices for specific tickers");
 		const urlParams = encodeURIComponent(tickers.join(","));
-		return await this.request(`/iex/${urlParams}`);
+		return this.request(`/iex/${urlParams}`);
 	}
 
 	async updateStockPricesHistory(tickers: string[]): Promise<void> {
@@ -71,6 +77,35 @@ export class TiingoService {
 	async saveStockPricesHistory(history: StockPrices[]): Promise<void> {
 		this.logger.debug("Saving stock prices history to file");
 		await writeFile(STOCK_PRICES_HISTORY_PATH, JSON.stringify(history), { encoding: "utf8" });
+	}
+
+	async getTickerList(): Promise<string[]> {
+		this.logger.debug("Reading ticker list file");
+		try {
+			const content = await readFile(TICKER_LIST_PATH, { encoding: "utf8" });
+			return JSON.parse(content) as string[];
+		} catch (e: unknown) {
+			if (typeof e === "object" && e !== null && "code" in e && e.code === "ENOENT") {
+				this.logger.warn("Ticker list file not found, returning empty array");
+				return [];
+			}
+			throw e;
+		}
+	}
+
+	async updateTickerList(): Promise<void> {
+		this.logger.info("Updating ticker list");
+		const prices = await this.getStockPrices("all");
+		const tickers = new Set<string>();
+		prices.map((it) => tickers.add(it.ticker));
+
+		this.logger.debug("Saving updated ticker list");
+		await this.saveTickerList([...tickers]);
+	}
+
+	async saveTickerList(tickers: string[]): Promise<void> {
+		this.logger.debug("Saving ticker list to file");
+		await writeFile(TICKER_LIST_PATH, JSON.stringify(tickers), { encoding: "utf-8" });
 	}
 
 	async request<T = unknown>(path: string, params?: URLSearchParams): Promise<T> {

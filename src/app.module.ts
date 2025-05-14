@@ -13,6 +13,7 @@ import { LogModule } from "./log/log.module.js";
 import { LogService } from "./log/log.service.js";
 import { createPinoWebSocketTransport } from "./log/log.transport.js";
 import { PreferencesModule } from "./preferences/preferences.module.js";
+import { SearchModule } from "./search/search.module.js";
 import { TaskModule } from "./task/task.module.js";
 import { TiingoModule } from "./tiingo/tiingo.module.js";
 
@@ -56,7 +57,8 @@ const __dirname = dirname(__filename);
 		TiingoModule,
 		ScheduleModule.forRoot(),
 		TaskModule,
-		LogModule
+		LogModule,
+		SearchModule
 	]
 })
 export class AppModule {}
