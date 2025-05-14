@@ -2,6 +2,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { TaskService } from "../task/task.service.js";
 import { TiingoService } from "../tiingo/tiingo.service.js";
 
 import { SearchController } from "./search.controller.js";
@@ -9,6 +10,10 @@ import { SearchService } from "./search.service.js";
 
 describe("SearchController", () => {
 	let controller: SearchController;
+
+	const mockTaskService = {
+		hourlyStockPricesHistoryUpdate: vi.fn()
+	};
 
 	const mockSearchService = {
 		findTickers: vi.fn()
@@ -22,6 +27,7 @@ describe("SearchController", () => {
 		const moduleRef: TestingModule = await Test.createTestingModule({
 			controllers: [SearchController],
 			providers: [
+				{ provide: TaskService, useValue: mockTaskService },
 				{ provide: SearchService, useValue: mockSearchService },
 				{ provide: TiingoService, useValue: mockTiingoService }
 			]
