@@ -57,24 +57,52 @@
                 const json = JSON.parse(msg);
                 const level = (json.level || "info").toLowerCase();
                 const timestamp = json.timestamp || new Date().toISOString();
+                const message = json.msg || "(no message)";
+                const extraFields = { ...json };
+                delete extraFields.timestamp;
+                delete extraFields.level;
+                delete extraFields.msg;
 
                 logEntry.className = `log-entry ${level}`;
                 logEntry.innerHTML = `
-                    <span class="timestamp">${timestamp}</span>
-                    <div class="level">${level}</div>
-                    <pre>${JSON.stringify(json, null, 2)}</pre>
+                    <div class="log-header">
+                        <span class="timestamp">${timestamp}</span>
+                        <span class="level">${level}</span>
+                    </div>
+                    <div class="log-message">${message}</div>
+                    ${
+                        Object.keys(extraFields).length
+                            ? `
+                            <button class="toggle-extra">Show details ▼</button>
+                            <div class="log-extra hidden">
+                                <pre>${JSON.stringify(extraFields, null, 2)}</pre>
+                            </div>`
+                            : ""
+                    }
                 `;
             } catch (e) {
                 logEntry.className = "log-entry error";
                 logEntry.innerHTML = `
-                    <span class="timestamp">${new Date().toISOString()}</span>
-                    <div class="level">invalid</div>
-                    <pre>${msg}</pre>
+                    <div class="log-header">
+                        <span class="timestamp">${new Date().toISOString()}</span>
+                        <span class="level">invalid</span>
+                    </div>
+                    <div class="log-message">${msg}</div>
                 `;
             }
 
             logContainer.appendChild(logEntry);
-            scrollToBottom();
+            logContainer.scrollTop = logContainer.scrollHeight;
+
+            const toggleBtn = logEntry.querySelector(".toggle-extra");
+            const extraDiv = logEntry.querySelector(".log-extra");
+
+            if (toggleBtn && extraDiv) {
+                toggleBtn.addEventListener("click", () => {
+                    const isHidden = extraDiv.classList.toggle("hidden");
+                    toggleBtn.textContent = isHidden ? "Show details ▼" : "Hide details ▲";
+                });
+            }
         }
 
         const socket = io("/log");

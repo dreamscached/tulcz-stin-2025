@@ -454,6 +454,16 @@ nav {
     white-space: pre-wrap;
 }
 
+.log-entry pre {
+    margin: 0;
+    font-family: monospace;
+    background: none;
+    border: none;
+    overflow-x: auto;
+    white-space: pre; /* ensure lines do not wrap */
+    max-width: 100%;
+}
+
 .log-entry .timestamp {
     color: #999;
     font-size: 0.85rem;
@@ -466,7 +476,68 @@ nav {
     text-transform: uppercase;
 }
 
+.log-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.25rem;
+    font-size: 0.85rem;
+    color: #555;
+}
+
+.log-message {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: #222;
+    word-break: break-word;
+}
+
+.log-extra pre {
+    margin: 0;
+    background-color: #f8f8f8;
+    padding: 0.5rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 0.85rem;
+    white-space: pre;
+}
+
 .log-entry.debug   { border-left: 5px solid #6c757d; }
 .log-entry.info    { border-left: 5px solid #17a2b8; }
 .log-entry.warn    { border-left: 5px solid #ffc107; }
 .log-entry.error   { border-left: 5px solid #dc3545; }
+
+.toggle-extra {
+    background: none;
+    border: none;
+    color: #328E6E;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    padding: 0;
+    text-align: left;
+}
+
+.toggle-extra:hover {
+    text-decoration: underline;
+}
+
+.log-extra {
+    margin-top: 0.5rem;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Responsive font sizing for log entries */
+@media (max-width: 768px) {
+    .log-entry pre {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .log-entry pre {
+        font-size: 0.8rem;
+    }
+}
