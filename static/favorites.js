@@ -119,3 +119,30 @@ async function loadFavorites(filter = "recommended") {
         showError(container, "Could not load favorites.");
     }
 }
+
+document.getElementById("updateFavoritesBtn")?.addEventListener("click", async () => {
+    const button = document.getElementById("updateFavoritesBtn");
+    button.disabled = true;
+    button.textContent = "Updating...";
+
+    try {
+        const res = await fetch("/search/update", {
+            method: "POST"
+        });
+
+        if (!res.ok) throw new Error("Update failed");
+
+        button.textContent = "Updating!";
+        setTimeout(() => {
+            button.textContent = "Update";
+            button.disabled = false;
+        }, 2000);
+    } catch (err) {
+        console.error("Update error:", err);
+        button.textContent = "Error!";
+        setTimeout(() => {
+            button.textContent = "Update";
+            button.disabled = false;
+        }, 3000);
+    }
+});

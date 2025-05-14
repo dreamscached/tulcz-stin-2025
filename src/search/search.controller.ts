@@ -41,7 +41,7 @@ export class SearchController {
 	}
 
 	@Post("/update")
-	@HttpCode(201)
+	@HttpCode(202)
 	@ApiOperation({ summary: "Force update ticker data" })
 	@ApiResponse({ status: 201, description: "Update triggered" })
 	async forceUpdateTickers(): Promise<void> {

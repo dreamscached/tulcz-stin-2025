@@ -565,3 +565,19 @@ nav {
     color: #33989e;
     border-bottom-color: #33989e;
 }
+
+.update-btn {
+    /* margin-bottom: 1rem; */
+    padding: 10px 16px;
+    background-color: #328E6E;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.update-btn:hover {
+    background-color: #28775B;
+}

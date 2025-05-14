@@ -66,4 +66,9 @@ describe("SearchController", () => {
 		expect(mockTiingoService.filterTickersWithHistory).toHaveBeenCalled();
 		expect(response).toEqual(result);
 	});
+
+	it("triggers hourly update on /search/update", async () => {
+		await controller.forceUpdateTickers();
+		expect(mockTaskService.hourlyStockPricesHistoryUpdate).toHaveBeenCalled();
+	});
 });
