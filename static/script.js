@@ -284,9 +284,17 @@ async function handleSearchInput(event) {
         results.forEach(symbol => {
             const suggestionItem = document.createElement("div");
             suggestionItem.className = "suggestion-item";
+
+            const isFavorite = isTickerFavorite(symbol);
+
             suggestionItem.innerHTML = `
                 <div class="suggestion-symbol">${symbol}</div>
+                <button class="favorite-button" data-symbol="${symbol}">
+                    <i class="${isFavorite ? 'fas' : 'far'} fa-heart"></i>
+                </button>
             `;
+
+            // Add click to select
             suggestionItem.addEventListener("click", () => {
                 selectStock({
                     symbol,
@@ -296,6 +304,15 @@ async function handleSearchInput(event) {
                     sector: ""
                 });
             });
+
+            // Add click to favorite
+            suggestionItem.querySelector(".favorite-button").addEventListener("click", (e) => {
+                e.stopPropagation();
+                toggleFavorite(symbol);
+                updateSearchHeart(symbol);
+                updatePreferencesOnServer(symbol);
+            });
+
             suggestionsContainer.appendChild(suggestionItem);
         });
 
@@ -304,6 +321,36 @@ async function handleSearchInput(event) {
         console.error("Search error:", err);
         suggestionsContainer.style.display = "none";
     }
+}
+
+function isTickerFavorite(symbol) {
+	const favorites = JSON.parse(localStorage.getItem('sharedFavorites') || '[]');
+	return favorites.some(stock => stock.symbol === symbol);
+}
+
+function updateSearchHeart(symbol) {
+	const btn = document.querySelector(`.favorite-button[data-symbol="${symbol}"] i`);
+	if (btn) {
+		btn.className = isTickerFavorite(symbol) ? 'fas fa-heart' : 'far fa-heart';
+	}
+}
+
+async function updatePreferencesOnServer(newSymbol) {
+	try {
+		const res = await fetch("/preferences");
+		if (!res.ok) throw new Error("Failed to load preferences");
+		const data = await res.json();
+		const tickers = new Set(data.favoriteTickers);
+		tickers.add(newSymbol);
+
+		await fetch("/preferences", {
+			method: "PATCH",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ favoriteTickers: Array.from(tickers) })
+		});
+	} catch (e) {
+		console.error("Failed to update preferences", e);
+	}
 }
 
 // Function to handle clicks outside of search
