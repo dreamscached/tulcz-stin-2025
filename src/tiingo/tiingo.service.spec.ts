@@ -265,6 +265,55 @@ describe("TiingoService", () => {
 			/* eslint-enable @typescript-eslint/unbound-method */
 		});
 	});
+
+	describe("updateTickerList()", () => {
+		it("fetches all prices and saves unique tickers", async () => {
+			const mockPrices: StockPrices[] = [
+				{ ...mockStockPrice(), ticker: "AAPL" },
+				{ ...mockStockPrice(), ticker: "GOOG" },
+				{ ...mockStockPrice(), ticker: "AAPL" }
+			];
+
+			service.getStockPrices = vi.fn().mockResolvedValue(mockPrices);
+			const writeSpy = fs.writeFile as MockedFunction<typeof fs.writeFile>;
+
+			await service.updateTickerList();
+
+			// eslint-disable-next-line @typescript-eslint/unbound-method
+			expect(service.getStockPrices).toHaveBeenCalledWith("all");
+			expect(writeSpy).toHaveBeenCalledWith(expect.any(String), JSON.stringify(["AAPL", "GOOG"]), {
+				encoding: "utf-8"
+			});
+		});
+	});
+
+	describe("getTickerList()", () => {
+		it("returns parsed list from file", async () => {
+			(fs.readFile as MockedFunction<typeof fs.readFile>).mockResolvedValueOnce(JSON.stringify(["AAPL", "TSLA"]));
+
+			const result = await service.getTickerList();
+			expect(result).toEqual(["AAPL", "TSLA"]);
+		});
+
+		it("returns empty array if file not found", async () => {
+			const err = Object.assign(new Error("File not found"), { code: "ENOENT" });
+			(fs.readFile as MockedFunction<typeof fs.readFile>).mockRejectedValueOnce(err);
+
+			const result = await service.getTickerList();
+			expect(result).toEqual([]);
+		});
+	});
+
+	describe("saveTickerList()", () => {
+		it("writes ticker list to file", async () => {
+			const writeSpy = fs.writeFile as MockedFunction<typeof fs.writeFile>;
+
+			await service.saveTickerList(["AAPL", "MSFT"]);
+			expect(writeSpy).toHaveBeenCalledWith(expect.any(String), JSON.stringify(["AAPL", "MSFT"]), {
+				encoding: "utf-8"
+			});
+		});
+	});
 });
 
 function mockStockPrice(): StockPrices {
