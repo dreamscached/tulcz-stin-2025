@@ -521,3 +521,9 @@ nav {
         font-size: 0.8rem;
     }
 }
+
+#logContainer {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
