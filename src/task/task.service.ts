@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { Cron } from "@nestjs/schedule";
+import { Cron, Interval } from "@nestjs/schedule";
 
 import { PinoLogger } from "nestjs-pino";
 
@@ -35,5 +35,10 @@ export class TaskService {
 		this.logger.info({ tickers: pref.favoriteTickers }, "Updating stock price history for favorite tickers");
 		await this.tiingo.updateStockPricesHistory(pref.favoriteTickers);
 		this.logger.info("Stock price history updated");
+	}
+
+	@Interval(1e3)
+	secondly() {
+		this.logger.info("Logging!");
 	}
 }
