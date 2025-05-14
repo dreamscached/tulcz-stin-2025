@@ -2,10 +2,16 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { Module } from "@nestjs/common";
-import { ConfigModule } from "@nestjs/config";
+import { ConfigModule, ConfigService } from "@nestjs/config";
 import { ScheduleModule } from "@nestjs/schedule";
 import { ServeStaticModule } from "@nestjs/serve-static";
 
+import { LoggerModule } from "nestjs-pino";
+import { multistream } from "pino";
+
+import { LogModule } from "./log/log.module.js";
+import { LogService } from "./log/log.service.js";
+import { createPinoWebSocketTransport } from "./log/log.transport.js";
 import { PreferencesModule } from "./preferences/preferences.module.js";
 import { TaskModule } from "./task/task.module.js";
 import { TiingoModule } from "./tiingo/tiingo.module.js";
@@ -16,6 +22,28 @@ const __dirname = dirname(__filename);
 @Module({
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true, envFilePath: [".env.local", ".env"] }),
+		LoggerModule.forRootAsync({
+			imports: [ConfigModule, LogModule],
+			inject: [ConfigService, LogService],
+			useFactory: async (config: ConfigService, log: LogService) => ({
+				pinoHttp: {
+					level: config.getOrThrow("NODE_ENV") !== "production" ? "trace" : "info",
+					stream: multistream([
+						{
+							stream:
+								config.getOrThrow("NODE_ENV") !== "production"
+									? (await import("pino-pretty")).PinoPretty() // Pretty output in development
+									: process.stdout // JSON logging in production
+						},
+						{ stream: createPinoWebSocketTransport(log) } // Push log to buffer & broadcast over WS
+					]),
+					formatters: {
+						// Keep label as string in JSON log
+						level: (label: string) => ({ level: label })
+					}
+				}
+			})
+		}),
 		ServeStaticModule.forRoot({
 			rootPath: join(__dirname, "..", "..", "static"),
 			serveStaticOptions: {
@@ -26,7 +54,8 @@ const __dirname = dirname(__filename);
 		PreferencesModule,
 		TiingoModule,
 		ScheduleModule.forRoot(),
-		TaskModule
+		TaskModule,
+		LogModule
 	]
 })
 export class AppModule {}

@@ -2,6 +2,9 @@ import { BigIntStats } from "node:fs";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 
+import { Test, TestingModule } from "@nestjs/testing";
+
+import { PinoLogger } from "nestjs-pino";
 import { type MockedFunction, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { Preferences } from "./preferences.entity.js";
@@ -34,15 +37,27 @@ describe("PreferencesService", () => {
 		favoriteTickers: ["AAPL", "GOOG"]
 	};
 
-	beforeEach(() => {
-		service = new PreferencesService();
+	const mockLogger = {
+		debug: vi.fn(),
+		info: vi.fn(),
+		warn: vi.fn(),
+		error: vi.fn(),
+		setContext: vi.fn()
+	};
 
+	beforeEach(async () => {
 		readFileMock = fs.readFile as unknown as MockedFunction<typeof fs.readFile>;
 		writeFileMock = fs.writeFile as unknown as MockedFunction<typeof fs.writeFile>;
 		mkdirMock = fs.mkdir as unknown as MockedFunction<typeof fs.mkdir>;
 		statMock = fs.stat as unknown as MockedFunction<typeof fs.stat>;
 
 		vi.clearAllMocks();
+
+		const module: TestingModule = await Test.createTestingModule({
+			providers: [PreferencesService, { provide: PinoLogger, useValue: mockLogger }]
+		}).compile();
+
+		service = module.get(PreferencesService);
 	});
 
 	describe("getPreferences", () => {

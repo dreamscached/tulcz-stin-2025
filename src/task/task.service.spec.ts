@@ -1,5 +1,6 @@
 import { Test, TestingModule } from "@nestjs/testing";
 
+import { PinoLogger } from "nestjs-pino";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { PreferencesService } from "../preferences/preferences.service.js";
@@ -19,6 +20,14 @@ describe("TaskService", () => {
 		getPreferences: ReturnType<typeof vi.fn>;
 	};
 
+	const mockLogger = {
+		debug: vi.fn(),
+		info: vi.fn(),
+		warn: vi.fn(),
+		error: vi.fn(),
+		setContext: vi.fn()
+	};
+
 	beforeEach(async () => {
 		tiingoMock = {
 			updateStockPricesHistory: vi.fn()
@@ -33,7 +42,8 @@ describe("TaskService", () => {
 			providers: [
 				TaskService,
 				{ provide: TiingoService, useValue: tiingoMock },
-				{ provide: PreferencesService, useValue: preferencesMock }
+				{ provide: PreferencesService, useValue: preferencesMock },
+				{ provide: PinoLogger, useValue: mockLogger }
 			]
 		}).compile();
 

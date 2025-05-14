@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Stock Market - Logs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Shared styles -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Socket.IO -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="index.html" class="logo">
+                <img src="images/logo.png" alt="Stock Market Logo">
+            </a>
+            <nav>
+                <a href="favorites.html" class="favorites-link">
+                    <i class="fas fa-star"></i>
+                    <span>Favorites</span>
+                </a>
+                <a href="log.html" class="nav-link active">
+                    <i class="fas fa-terminal"></i>
+                    <span>Logs</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="description">
+            <h1>Live WebSocket Logs</h1>
+            <p>Real-time JSON logs streamed from the backend.</p>
+        </div>
+
+        <div class="favorites-container" id="logContainer">
+            <!-- Logs will be appended here -->
+        </div>
+    </main>
+
+    <script>
+        const logContainer = document.getElementById("logContainer");
+
+        function scrollToBottom() {
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function isAtBottom(container) {
+            return container.scrollTop + container.clientHeight >= container.scrollHeight - 1;
+        }
+
+        function renderLog(msg) {
+            const shouldScroll = isAtBottom(logContainer);
+
+            const logEntry = document.createElement("div");
+
+            try {
+                const json = typeof msg === "string" ? JSON.parse(msg) : msg;
+                const level = (json.level || "info").toLowerCase();
+
+                let timestamp = json.time || json.timestamp || Date.now();
+                if (typeof timestamp === "number") {
+                    timestamp = new Date(timestamp).toISOString();
+                }
+
+                const message = json.msg || json.message || "(no message)";
+                const extra = { ...json };
+                delete extra.time;
+                delete extra.timestamp;
+                delete extra.level;
+                delete extra.msg;
+                delete extra.message;
+
+                logEntry.className = `log-entry ${level}`;
+                logEntry.innerHTML = `
+                    <div class="log-header">
+                        <span class="timestamp">${timestamp}</span>
+                        <span class="level">${level}</span>
+                    </div>
+                    <div class="log-message">${message}</div>
+                    ${Object.keys(extra).length ? `
+                        <button class="toggle-extra">Show details ▼</button>
+                        <div class="log-extra hidden">
+                            <pre>${JSON.stringify(extra, null, 2)}</pre>
+                        </div>` : ""}
+                `;
+            } catch {
+                logEntry.className = "log-entry error";
+                logEntry.innerHTML = `
+                    <div class="log-header">
+                        <span class="timestamp">${new Date().toISOString()}</span>
+                        <span class="level">invalid</span>
+                    </div>
+                    <div class="log-message">${msg}</div>
+                `;
+            }
+
+            logContainer.appendChild(logEntry);
+
+            if (shouldScroll) {
+                logContainer.scrollTo({ top: logContainer.scrollHeight, behavior: "auto" });
+            }
+
+            const toggle = logEntry.querySelector(".toggle-extra");
+            const extra = logEntry.querySelector(".log-extra");
+            if (toggle && extra) {
+                toggle.addEventListener("click", () => {
+                    const hidden = extra.classList.toggle("hidden");
+                    toggle.textContent = hidden ? "Show details ▼" : "Hide details ▲";
+                });
+            }
+        }
+
+        const socket = io("/log");
+        socket.on("log", (msg) => renderLog(msg));
+    </script>
+</body>
+</html>

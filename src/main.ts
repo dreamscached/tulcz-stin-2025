@@ -3,11 +3,19 @@ import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 
+import { Logger, LoggerErrorInterceptor } from "nestjs-pino";
+
 import { AppModule } from "./app.module.js";
 import { PreferencesService } from "./preferences/preferences.service.js";
 
 async function bootstrap(): Promise<void> {
 	const app = await NestFactory.create(AppModule);
+
+	// Logging
+	app.useLogger(app.get(Logger));
+	app.useGlobalInterceptors(new LoggerErrorInterceptor());
+
+	// DTO and query parameter validation
 	app.useGlobalPipes(
 		new ValidationPipe({
 			whitelist: true, // no extra properties allowed
