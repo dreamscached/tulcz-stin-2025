@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Stock Market - Logs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Shared styles -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Socket.IO -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+    <style>
+        nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .log-entry {
+            background-color: #fff;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+
+        .log-entry .timestamp {
+            color: #999;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .log-entry .level {
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .log-entry.debug   { border-left: 5px solid #6c757d; }
+        .log-entry.info    { border-left: 5px solid #17a2b8; }
+        .log-entry.warn    { border-left: 5px solid #ffc107; }
+        .log-entry.error   { border-left: 5px solid #dc3545; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="index.html" class="logo">
+                <img src="images/logo.png" alt="Stock Market Logo">
+            </a>
+            <nav>
+                <a href="favorites.html" class="favorites-link">
+                    <i class="fas fa-star"></i>
+                    <span>Favorites</span>
+                </a>
+                <a href="log.html" class="nav-link active">
+                    <i class="fas fa-terminal"></i>
+                    <span>Logs</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="description">
+            <h1>Live WebSocket Logs</h1>
+            <p>Real-time JSON logs streamed from the backend.</p>
+        </div>
+
+        <div class="favorites-container" id="logContainer">
+            <!-- Logs will be appended here -->
+        </div>
+    </main>
+
+    <script>
+        const logContainer = document.getElementById("logContainer");
+
+        function scrollToBottom() {
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function renderLog(msg) {
+            const logEntry = document.createElement("div");
+
+            try {
+                const json = JSON.parse(msg);
+                const level = (json.level || "info").toLowerCase();
+                const timestamp = json.timestamp || new Date().toISOString();
+
+                logEntry.className = `log-entry ${level}`;
+                logEntry.innerHTML = `
+                    <span class="timestamp">${timestamp}</span>
+                    <div class="level">${level}</div>
+                    <pre>${JSON.stringify(json, null, 2)}</pre>
+                `;
+            } catch (e) {
+                logEntry.className = "log-entry error";
+                logEntry.innerHTML = `
+                    <span class="timestamp">${new Date().toISOString()}</span>
+                    <div class="level">invalid</div>
+                    <pre>${msg}</pre>
+                `;
+            }
+
+            logContainer.appendChild(logEntry);
+            scrollToBottom();
+        }
+
+        const socket = io("/log");
+
+        socket.on("log", (msg) => renderLog(msg));
+
+        socket.emit("log:history", { size: 20 });
+
+        socket.on("log:history", (messages) => {
+            messages.forEach(renderLog);
+        });
+    </script>
+</body>
+</html>

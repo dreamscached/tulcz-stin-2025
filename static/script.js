@@ -156,8 +156,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Инициализация поля поиска
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
-        searchInput.addEventListener('input', handleSearchInput); 
-        searchInput.addEventListener('focus', handleSearchInput); 
+        searchInput.addEventListener('input', handleSearchInput);
+        searchInput.addEventListener('focus', handleSearchInput);
         searchInput.addEventListener('keydown', function(event) {
             if (event.key === 'Enter') {
                 const firstSuggestion = document.querySelector('.suggestion-item');
@@ -217,7 +217,7 @@ function loadFavorites() {
 function removeFavorite(symbol) {
     const favorites = JSON.parse(localStorage.getItem('sharedFavorites') || '[]');
     const index = favorites.findIndex(stock => stock.symbol === symbol);
-    
+
     if (index !== -1) {
         favorites.splice(index, 1);
         localStorage.setItem('sharedFavorites', JSON.stringify(favorites));
@@ -229,19 +229,19 @@ function removeFavorite(symbol) {
 function toggleFavorite(ticker) {
     const favorites = JSON.parse(localStorage.getItem('sharedFavorites') || '[]');
     const index = favorites.findIndex(stock => stock.symbol === ticker);
-    
+
     if (index === -1) {
         // Add to favorites
         const stockData = testStocks.find(s => s.symbol === ticker);
-        favorites.push({ 
-            symbol: ticker, 
-            name: stockData ? stockData.name : ticker 
+        favorites.push({
+            symbol: ticker,
+            name: stockData ? stockData.name : ticker
         });
     } else {
         // Remove from favorites
         favorites.splice(index, 1);
     }
-    
+
     localStorage.setItem('sharedFavorites', JSON.stringify(favorites));
     updateFavoriteButton(ticker);
 }
@@ -250,11 +250,11 @@ function toggleFavorite(ticker) {
 function updateFavoriteButton(ticker) {
     const favorites = JSON.parse(localStorage.getItem('sharedFavorites') || '[]');
     const isFavorite = favorites.some(stock => stock.symbol === ticker);
-    
+
     const favoriteButton = document.querySelector(`[data-ticker="${ticker}"] .favorite-button`);
     if (favoriteButton) {
-        favoriteButton.innerHTML = isFavorite ? 
-            '<i class="fas fa-star"></i>' : 
+        favoriteButton.innerHTML = isFavorite ?
+            '<i class="fas fa-star"></i>' :
             '<i class="far fa-star"></i>';
     }
 }
@@ -306,7 +306,7 @@ function handleSearchInput(event) {
 function handleClickOutside(event) {
     const searchContainer = document.querySelector('.search-container');
     const suggestionsContainer = document.getElementById('searchSuggestions');
-    
+
     if (!searchContainer.contains(event.target) && !event.target.classList.contains('suggestion-item')) {
         suggestionsContainer.style.display = 'none';
     }
@@ -351,7 +351,7 @@ function selectStock(stock) {
     `;
 
     selectedStocksContainer.appendChild(selectedStock);
-    
+
     // Clear search input and hide suggestions
     searchInput.value = '';
     suggestionsContainer.style.display = 'none';
@@ -365,9 +365,9 @@ function toggleFavoriteFromSelected(symbol, btn) {
     if (index === -1) {
         // Add to favorites
         const stockData = testStocks.find(s => s.symbol === symbol);
-        favorites.push({ 
-            symbol: symbol, 
-            name: stockData ? stockData.name : symbol 
+        favorites.push({
+            symbol: symbol,
+            name: stockData ? stockData.name : symbol
         });
         isFavorite = true;
     } else {
