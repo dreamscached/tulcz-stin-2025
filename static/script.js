@@ -259,47 +259,51 @@ function updateFavoriteButton(ticker) {
     }
 }
 
-function handleSearchInput(event) {
+async function handleSearchInput(event) {
     const query = event.target.value.trim().toLowerCase();
-    const suggestionsContainer = document.getElementById('searchSuggestions');
+    const suggestionsContainer = document.getElementById("searchSuggestions");
 
     if (!query) {
-        suggestionsContainer.style.display = 'none';
-        suggestionsContainer.innerHTML = '';
+        suggestionsContainer.style.display = "none";
+        suggestionsContainer.innerHTML = "";
         return;
     }
 
-    const suggestions = testStocks.filter(stock =>
-        stock.symbol.toLowerCase().includes(query) ||
-        stock.name.toLowerCase().includes(query)
-    );
+    try {
+        const response = await fetch(`/search?query=${encodeURIComponent(query)}`);
+        if (!response.ok) throw new Error("Failed to fetch search results");
 
-    if (suggestions.length === 0) {
-        suggestionsContainer.style.display = 'none';
-        return;
-    }
+        const results = await response.json();
 
-    suggestionsContainer.innerHTML = '';
-    suggestions.forEach(stock => {
-        const suggestionItem = document.createElement('div');
-        suggestionItem.className = 'suggestion-item';
-        suggestionItem.innerHTML = `
-            <div class="suggestion-symbol">${stock.symbol}</div>
-            <div class="suggestion-name">${stock.name}</div>
-        `;
-        suggestionItem.addEventListener('click', () => {
-            selectStock({
-                symbol: stock.symbol,
-                name: stock.name,
-                price: stock.prices?.at(-1) || stock.price,
-                change: 0,
-                sector: stock.sector
+        if (!Array.isArray(results) || results.length === 0) {
+            suggestionsContainer.style.display = "none";
+            return;
+        }
+
+        suggestionsContainer.innerHTML = "";
+        results.forEach(symbol => {
+            const suggestionItem = document.createElement("div");
+            suggestionItem.className = "suggestion-item";
+            suggestionItem.innerHTML = `
+                <div class="suggestion-symbol">${symbol}</div>
+            `;
+            suggestionItem.addEventListener("click", () => {
+                selectStock({
+                    symbol,
+                    name: symbol,
+                    price: 0,
+                    change: 0,
+                    sector: ""
+                });
             });
+            suggestionsContainer.appendChild(suggestionItem);
         });
-        suggestionsContainer.appendChild(suggestionItem);
-    });
 
-    suggestionsContainer.style.display = 'block';
+        suggestionsContainer.style.display = "block";
+    } catch (err) {
+        console.error("Search error:", err);
+        suggestionsContainer.style.display = "none";
+    }
 }
 
 // Function to handle clicks outside of search
@@ -334,13 +338,6 @@ function selectStock(stock) {
     selectedStock.innerHTML = `
         <div class="selected-stock-info">
             <div class="selected-stock-symbol">${stock.symbol}</div>
-            <div class="selected-stock-name">${stock.name}</div>
-            <div class="selected-stock-price">
-                <span class="price">$${stock.price.toFixed(2)}</span>
-                <span class="change ${stock.change >= 0 ? 'positive' : 'negative'}">
-                    ${stock.change >= 0 ? '+' : ''}${stock.change}%
-                </span>
-            </div>
         </div>
         <button class="favorite-button" onclick="toggleFavoriteFromSelected('${stock.symbol}', this)">
             <i class="${isFavorite ? 'fas' : 'far'} fa-heart"></i>
