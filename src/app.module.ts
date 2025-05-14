@@ -48,7 +48,8 @@ const __dirname = dirname(__filename);
 			rootPath: join(__dirname, "..", "..", "static"),
 			serveStaticOptions: {
 				dotfiles: "ignore",
-				maxAge: 3600e3 // 1 hour TTL
+				maxAge: 3600e3, // 1 hour TTL
+				extensions: ["html"]
 			}
 		}),
 		PreferencesModule,
