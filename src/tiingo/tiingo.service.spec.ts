@@ -122,6 +122,41 @@ describe("TiingoService", () => {
 			expect(result).toEqual(mockPrices);
 			expect(fetchMock).toHaveBeenCalled();
 		});
+
+		it('calls the /iex endpoint when "all" is passed', async () => {
+			const mockPrices: StockPrices[] = [
+				{
+					ticker: "ALL",
+					timestamp: "2024-01-01T00:00:00Z",
+					quoteTimestamp: null,
+					lastSaleTimestamp: null,
+					last: 100,
+					lastSize: null,
+					tngoLast: 100,
+					prevClose: 98,
+					open: 99,
+					high: 101,
+					low: 97,
+					mid: 100,
+					volume: 100000,
+					bidSize: null,
+					bidPrice: null,
+					askSize: null,
+					askPrice: null
+				}
+			];
+
+			fetchMock.mockResolvedValueOnce({
+				status: 200,
+				json: vi.fn().mockResolvedValueOnce(mockPrices)
+			});
+
+			const result = await service.getStockPrices("all");
+
+			expect(fetchMock).toHaveBeenCalled();
+			expect((fetchMock.mock.calls[0][0] as unknown)?.toString?.()).toContain("/iex");
+			expect(result).toEqual(mockPrices);
+		});
 	});
 
 	describe("request()", () => {

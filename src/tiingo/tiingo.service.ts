@@ -21,16 +21,22 @@ export class TiingoService {
 		this.logger.debug({ query }, "Searching tickers");
 		const params = new URLSearchParams();
 		params.append("query", query);
-		return await this.request("/tiingo/utilities/search", params);
+		return this.request("/tiingo/utilities/search", params);
 	}
 
-	async getStockPrices(tickers: string[]): Promise<StockPrices[]> {
-		if (tickers.length === 0) {
-			throw new Error("At least one ticker is required");
+	async getStockPrices(tickers: string[] | "all"): Promise<StockPrices[]> {
+		if (tickers !== "all" && tickers.length === 0) {
+			throw new Error(`At least one ticker is required or the literal "all" to fetch all`);
 		}
-		this.logger.debug({ tickers }, "Fetching stock prices");
+
+		if (tickers === "all") {
+			this.logger.warn("Requesting all available stock prices");
+			return this.request(`/iex`);
+		}
+
+		this.logger.debug({ tickers }, "Fetching stock prices for specific tickers");
 		const urlParams = encodeURIComponent(tickers.join(","));
-		return await this.request(`/iex/${urlParams}`);
+		return this.request(`/iex/${urlParams}`);
 	}
 
 	async updateStockPricesHistory(tickers: string[]): Promise<void> {
