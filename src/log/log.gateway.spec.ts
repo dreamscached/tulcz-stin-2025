@@ -1,7 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
 
 import type { Socket } from "socket.io";
-import { Mocked, beforeEach, describe, expect, it, vi } from "vitest";
+import { type Mocked, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { LogBuffer } from "./buffer/buffer.js";
 import { LOG_BUFFER } from "./log.constants.js";
@@ -10,17 +10,20 @@ import { LogGateway } from "./log.gateway.js";
 describe("LogGateway", () => {
 	let gateway: LogGateway;
 
-	const bufferMock: Mocked<LogBuffer> = {
-		getBufferedMessages: vi.fn(),
-		push: vi.fn()
-	};
-
-	const clientMock = {
-		emit: vi.fn()
-	} as unknown as Socket;
+	let bufferMock: Mocked<LogBuffer>;
+	let clientMock: Socket;
 
 	beforeEach(async () => {
 		vi.clearAllMocks();
+
+		bufferMock = {
+			getBufferedMessages: vi.fn(),
+			push: vi.fn()
+		};
+
+		clientMock = {
+			emit: vi.fn()
+		} as unknown as Socket;
 
 		const module: TestingModule = await Test.createTestingModule({
 			providers: [LogGateway, { provide: LOG_BUFFER, useValue: bufferMock }]
@@ -29,25 +32,34 @@ describe("LogGateway", () => {
 		gateway = module.get(LogGateway);
 	});
 
-	describe("handleLogHistoryRequest", () => {
-		it("emits all logs if no size is given", async () => {
-			const logs = ["a", "b", "c"];
-			bufferMock.getBufferedMessages.mockResolvedValue(logs);
+	describe("handleConnection", () => {
+		it("should send buffered messages as individual 'log' events", async () => {
+			bufferMock.getBufferedMessages.mockResolvedValue(["foo", "bar"]);
 
-			await gateway.handleLogHistoryRequest(clientMock, {});
+			await gateway.handleConnection(clientMock);
 
-			// eslint-disable-next-line @typescript-eslint/unbound-method
-			expect(clientMock.emit).toHaveBeenCalledWith("log:history", logs);
+			/* eslint-disable @typescript-eslint/unbound-method */
+			expect(clientMock.emit).toHaveBeenCalledTimes(2);
+			expect(clientMock.emit).toHaveBeenCalledWith("log", "foo");
+			expect(clientMock.emit).toHaveBeenCalledWith("log", "bar");
+			/* eslint-enable @typescript-eslint/unbound-method */
 		});
+	});
 
-		it("emits last N logs when size is given", async () => {
-			const logs = Array.from({ length: 5 }, (_, i) => `log ${i + 1}`);
-			bufferMock.getBufferedMessages.mockResolvedValue(logs);
+	describe("broadcastLog", () => {
+		it("should emit message to all connected clients", () => {
+			const client1 = { emit: vi.fn() } as unknown as Socket;
+			const client2 = { emit: vi.fn() } as unknown as Socket;
 
-			await gateway.handleLogHistoryRequest(clientMock, { size: 2 });
+			gateway["clients"].add(client1);
+			gateway["clients"].add(client2);
 
-			// eslint-disable-next-line @typescript-eslint/unbound-method
-			expect(clientMock.emit).toHaveBeenCalledWith("log:history", ["log 4", "log 5"]);
+			gateway.broadcastLog("message");
+
+			/* eslint-disable @typescript-eslint/unbound-method */
+			expect(client1.emit).toHaveBeenCalledWith("log", "message");
+			expect(client2.emit).toHaveBeenCalledWith("log", "message");
+			/* eslint-enable @typescript-eslint/unbound-method */
 		});
 	});
 });

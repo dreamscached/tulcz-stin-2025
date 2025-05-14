@@ -56,10 +56,10 @@
             try {
                 const json = JSON.parse(msg);
                 const level = (json.level || "info").toLowerCase();
-                const timestamp = json.timestamp || new Date().toISOString();
+                const timestamp = new Date(json.time).toISOString();
                 const message = json.msg || "(no message)";
                 const extraFields = { ...json };
-                delete extraFields.timestamp;
+                delete extraFields.time;
                 delete extraFields.level;
                 delete extraFields.msg;
 
@@ -106,14 +106,7 @@
         }
 
         const socket = io("/log");
-
         socket.on("log", (msg) => renderLog(msg));
-
-        socket.emit("log:history", { size: 20 });
-
-        socket.on("log:history", (messages) => {
-            messages.forEach(renderLog);
-        });
     </script>
 </body>
 </html>

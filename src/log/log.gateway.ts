@@ -24,8 +24,12 @@ export class LogGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
 	constructor(@Inject(LOG_BUFFER) private readonly buffer: LogBuffer) {}
 
-	handleConnection(client: Socket) {
+	async handleConnection(client: Socket) {
 		this.clients.add(client);
+		const messages = await this.buffer.getBufferedMessages();
+		for (const message of messages) {
+			client.emit("log", message);
+		}
 	}
 
 	handleDisconnect(client: Socket) {
