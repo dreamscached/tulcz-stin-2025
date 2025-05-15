@@ -581,3 +581,9 @@ nav {
 .update-btn:hover {
     background-color: #28775B;
 }
+
+.recommended {
+    color: green;
+    font-weight: bold;
+    margin-left: 8px;
+}

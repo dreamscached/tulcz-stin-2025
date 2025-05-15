@@ -14,13 +14,13 @@ function renderLog(msg) {
 
     try {
         const json = typeof msg === "string" ? JSON.parse(msg) : msg;
-        const level = (json.level || "info").toLowerCase();
-        let timestamp = json.time || json.timestamp || Date.now();
+        const level = (json.level ?? "info").toLowerCase();
+        let timestamp = json.time;
         if (typeof timestamp === "number") {
-            timestamp = new Date(timestamp).toISOString();
+            timestamp = new Date(timestamp).toLocaleString();
         }
 
-        const message = json.msg || json.message || "(no message)";
+        const message = json.msg ?? "(no message)";
         const extra = { ...json };
         delete extra.time;
         delete extra.timestamp;

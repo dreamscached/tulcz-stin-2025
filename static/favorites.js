@@ -1,24 +1,29 @@
-// favorites.js
+document.addEventListener("DOMContentLoaded", () => loadFavorites());
 
-document.addEventListener("DOMContentLoaded", loadFavorites);
-
-async function loadFavorites() {
+async function loadFavorites(filter = "3d") {
     const container = document.getElementById("favoritesList");
     showLoading(container);
 
     try {
-        const response = await fetch("/preferences");
-        if (!response.ok) throw new Error("Failed to load preferences");
+        const res = await fetch(`/search/filter/${filter}`);
+        const tickers = await res.json();
 
-        const data = await response.json();
-        renderFavorites(data.favoriteTickers || []);
+        const ratingRes = await fetch(`/search/ratings?tickers=${tickers.join(",")}`);
+        const ratingsData = await ratingRes.json();
+
+        const ratingMap = {};
+        for (const { name, rating } of ratingsData) {
+            ratingMap[name] = rating;
+        }
+
+        renderFavorites(tickers, ratingMap);
     } catch (error) {
         console.error("Error loading favorites:", error);
         showError(container, "Could not load favorites.");
     }
 }
 
-function renderFavorites(favorites) {
+function renderFavorites(favorites, ratingMap = {}) {
     const container = document.getElementById("favoritesList");
     container.innerHTML = "";
 
@@ -28,11 +33,14 @@ function renderFavorites(favorites) {
     }
 
     favorites.forEach((ticker) => {
+        const rating = ratingMap[ticker];
+        const isRecommended = rating > 5;
+
         const item = document.createElement("div");
         item.className = "favorite-item";
         item.innerHTML = `
             <div class="stock-info">
-                <h4>${ticker}</h4>
+                <h4>${ticker} ${isRecommended ? '<span class="recommended">★ Recommended</span>' : ''}</h4>
                 <p>Ticker symbol</p>
             </div>
             <button class="remove-favorite" onclick="removeFavorite('${ticker}')">
@@ -78,7 +86,8 @@ function showError(container, message) {
 
 document.addEventListener("DOMContentLoaded", () => {
     setupTabs();
-    loadFavorites(); // Default tab
+    document.querySelector('[data-filter="3d"]')?.classList.add("active");
+    loadFavorites("3d");
 });
 
 function setupTabs() {
@@ -92,32 +101,6 @@ function setupTabs() {
             loadFavorites(filter);
         });
     });
-}
-
-async function loadFavorites(filter = "recommended") {
-    const container = document.getElementById("favoritesList");
-    showLoading(container);
-
-    try {
-        let tickers = [];
-
-        if (filter === "3d") {
-            const res = await fetch("/search/filter/3d");
-            tickers = await res.json();
-        } else if (filter === "5d") {
-            const res = await fetch("/search/filter/5d");
-            tickers = await res.json();
-        } else {
-            const res = await fetch("/preferences");
-            const data = await res.json();
-            tickers = data.favoriteTickers || [];
-        }
-
-        renderFavorites(tickers);
-    } catch (error) {
-        console.error("Error loading favorites:", error);
-        showError(container, "Could not load favorites.");
-    }
 }
 
 document.getElementById("updateFavoritesBtn")?.addEventListener("click", async () => {

@@ -1,11 +1,14 @@
 import { Controller, Get, HttpCode, Post, Query } from "@nestjs/common";
 import { ApiOperation, ApiQuery, ApiResponse } from "@nestjs/swagger";
 
+import { StocksRatings } from "../news/dto/stocks-ratings.dto.js";
+import { NewsService } from "../news/news.service.js";
 import { TaskService } from "../task/task.service.js";
 import { moreThanTwoDropsInFiveDays } from "../tiingo/filter/five-days-drop.filter.js";
 import { goingDownThreeDays } from "../tiingo/filter/three-days-drop.filter.js";
 import { TiingoService } from "../tiingo/tiingo.service.js";
 
+import { RatingsDto } from "./dto/ratings.dto.js";
 import { SearchDto } from "./dto/search.dto.js";
 import { MAX_SEARCH_RESULTS } from "./search.constants.js";
 import { SearchService } from "./search.service.js";
@@ -15,6 +18,7 @@ export class SearchController {
 	constructor(
 		private readonly search: SearchService,
 		private readonly tiingo: TiingoService,
+		private readonly news: NewsService,
 		private readonly tasks: TaskService
 	) {}
 
@@ -38,6 +42,13 @@ export class SearchController {
 	@ApiResponse({ status: 200, description: "Matching tickers", type: [String] })
 	async filterTickers5d(): Promise<string[]> {
 		return this.tiingo.filterTickersWithHistory(moreThanTwoDropsInFiveDays);
+	}
+
+	@Get("/ratings")
+	@ApiOperation({ summary: "Requests ratings from News API for given tickers" })
+	@ApiResponse({ status: 200, description: "Ticker ratings", type: [StocksRatings] })
+	async getRatings(@Query() query: RatingsDto): Promise<StocksRatings[]> {
+		return this.news.getRatings(query.tickers);
 	}
 
 	@Post("/update")
