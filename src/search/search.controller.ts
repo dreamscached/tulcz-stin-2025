@@ -3,6 +3,7 @@ import { ApiOperation, ApiQuery, ApiResponse } from "@nestjs/swagger";
 
 import { StocksRatings } from "../news/dto/stocks-ratings.dto.js";
 import { NewsService } from "../news/news.service.js";
+import { PreferencesService } from "../preferences/preferences.service.js";
 import { TaskService } from "../task/task.service.js";
 import { moreThanTwoDropsInFiveDays } from "../tiingo/filter/five-days-drop.filter.js";
 import { goingDownThreeDays } from "../tiingo/filter/three-days-drop.filter.js";
@@ -16,6 +17,7 @@ import { SearchService } from "./search.service.js";
 @Controller("/search")
 export class SearchController {
 	constructor(
+		private readonly preferences: PreferencesService,
 		private readonly search: SearchService,
 		private readonly tiingo: TiingoService,
 		private readonly news: NewsService,
@@ -34,14 +36,18 @@ export class SearchController {
 	@ApiOperation({ summary: "Tickers going down 3 consecutive days" })
 	@ApiResponse({ status: 200, description: "Matching tickers", type: [String] })
 	async filterTickers3d(): Promise<string[]> {
-		return this.tiingo.filterTickersWithHistory(goingDownThreeDays);
+		const filtered = await this.tiingo.filterTickersWithHistory(goingDownThreeDays);
+		const favorites = (await this.preferences.getPreferences()).favoriteTickers;
+		return filtered.filter((t) => favorites.includes(t));
 	}
 
 	@Get("/filter/5d")
 	@ApiOperation({ summary: "Tickers dropping 3+ days out of last 5 business days" })
 	@ApiResponse({ status: 200, description: "Matching tickers", type: [String] })
 	async filterTickers5d(): Promise<string[]> {
-		return this.tiingo.filterTickersWithHistory(moreThanTwoDropsInFiveDays);
+		const filtered = await this.tiingo.filterTickersWithHistory(moreThanTwoDropsInFiveDays);
+		const favorites = (await this.preferences.getPreferences()).favoriteTickers;
+		return filtered.filter((t) => favorites.includes(t));
 	}
 
 	@Get("/ratings")

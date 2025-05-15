@@ -8,8 +8,13 @@ async function loadFavorites(filter = "3d") {
         const res = await fetch(`/search/filter/${filter}`);
         const tickers = await res.json();
 
-        const ratingRes = await fetch(`/search/ratings?tickers=${tickers.join(",")}`);
-        const ratingsData = await ratingRes.json();
+        // TODO: USING MOCK DATA HERE, CONNECT WITH REAL API
+        const ratingsData = tickers.map((ticker, i) => ({
+            name: ticker,
+            rating: Math.floor(Math.random() * 11),
+            date: 20240501,
+            sell: 0
+        }));
 
         const ratingMap = {};
         for (const { name, rating } of ratingsData) {
