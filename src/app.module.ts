@@ -29,7 +29,7 @@ const __dirname = dirname(__filename);
 			inject: [ConfigService, LogService],
 			useFactory: async (config: ConfigService, log: LogService) => ({
 				pinoHttp: {
-					level: config.getOrThrow("NODE_ENV") !== "production" ? "trace" : "info",
+					level: config.getOrThrow("NODE_ENV") !== "production" ? "trace" : "debug",
 					stream: multistream([
 						{
 							stream:

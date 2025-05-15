@@ -8,13 +8,8 @@ async function loadFavorites(filter = "3d") {
         const res = await fetch(`/search/filter/${filter}`);
         const tickers = await res.json();
 
-        // TODO: USING MOCK DATA HERE, CONNECT WITH REAL API
-        const ratingsData = tickers.map((ticker, i) => ({
-            name: ticker,
-            rating: Math.floor(Math.random() * 11),
-            date: 20240501,
-            sell: 0
-        }));
+        const ratingsDataRes = await fetch(`/search/ratings?tickers=${tickers.join(",")}`);
+        const ratingsData = await ratingsDataRes.json();
 
         const ratingMap = {};
         for (const { name, rating } of ratingsData) {
@@ -39,13 +34,18 @@ function renderFavorites(favorites, ratingMap = {}) {
 
     favorites.forEach((ticker) => {
         const rating = ratingMap[ticker];
-        const isRecommended = rating > 5;
+        const shouldSell = rating > 0;
+        const shouldBuy = rating < 0;
 
         const item = document.createElement("div");
         item.className = "favorite-item";
         item.innerHTML = `
             <div class="stock-info">
-                <h4>${ticker} ${isRecommended ? '<span class="recommended">★ Recommended</span>' : ''}</h4>
+                <h4>
+                    ${ticker}
+                    ${shouldSell ? '<span class="recommended">↘ should sell</span>' : ' '}
+                    ${shouldBuy ? '<span class="recommended">↗ should buy</span>' : ''}
+                </h4>
                 <p>Ticker symbol</p>
             </div>
             <button class="remove-favorite" onclick="removeFavorite('${ticker}')">
