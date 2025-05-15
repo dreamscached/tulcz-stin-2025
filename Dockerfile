@@ -10,6 +10,7 @@ WORKDIR /app
 COPY --from=builder /app/dist dist
 COPY --from=builder /app/package.json /app/yarn.lock /app/.yarnrc.yml .
 COPY --from=builder /app/node_modules node_modules
+COPY --from=builder /app/files files
 COPY --from=builder /app/static static
 COPY --from=builder /app/.yarn .yarn
 RUN corepack enable && corepack install
