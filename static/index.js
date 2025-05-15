@@ -1,5 +1,3 @@
-// index.js
-
 document.addEventListener("DOMContentLoaded", async () => {
     window.favoriteTickers = [];
 

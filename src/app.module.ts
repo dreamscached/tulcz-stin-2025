@@ -12,6 +12,7 @@ import { multistream } from "pino";
 import { LogModule } from "./log/log.module.js";
 import { LogService } from "./log/log.service.js";
 import { createPinoWebSocketTransport } from "./log/log.transport.js";
+import { NewsModule } from "./news/news.module.js";
 import { PreferencesModule } from "./preferences/preferences.module.js";
 import { SearchModule } from "./search/search.module.js";
 import { TaskModule } from "./task/task.module.js";
@@ -58,7 +59,8 @@ const __dirname = dirname(__filename);
 		ScheduleModule.forRoot(),
 		TaskModule,
 		LogModule,
-		SearchModule
+		SearchModule,
+		NewsModule
 	]
 })
 export class AppModule {}

@@ -5,6 +5,7 @@ import { ConfigService } from "@nestjs/config";
 
 import { PinoLogger } from "nestjs-pino";
 
+import { TickerFilter } from "./filter/filter.types.js";
 import { BASE_URL, STOCK_PRICES_HISTORY_PATH, TICKER_LIST_PATH } from "./tiingo.constants.js";
 import type { SearchResult, StockPrices } from "./tiingo.types.js";
 
@@ -54,7 +55,7 @@ export class TiingoService {
 
 	async purgeOldStockPrices(): Promise<void> {
 		const history = await this.getStockPricesHistory();
-		const staleBefore = new Date().getTime() - 5 * 86400e3;
+		const staleBefore = new Date().getTime() - 7 * 86400e3;
 		const purged = history.filter((it) => new Date(it.timestamp).getTime() > staleBefore);
 		this.logger.info({ count: history.length - purged.length }, "Purged old stock prices");
 		await this.saveStockPricesHistory(purged);
@@ -106,6 +107,33 @@ export class TiingoService {
 	async saveTickerList(tickers: string[]): Promise<void> {
 		this.logger.debug("Saving ticker list to file");
 		await writeFile(TICKER_LIST_PATH, JSON.stringify(tickers), { encoding: "utf-8" });
+	}
+
+	async filterTickersWithHistory(filter: TickerFilter): Promise<string[]> {
+		this.logger.debug("Loading stock price history for filtering");
+
+		const history = await this.getStockPricesHistory();
+
+		// Group by ticker
+		const byTicker: Map<string, StockPrices[]> = new Map();
+		for (const entry of history) {
+			const list = byTicker.get(entry.ticker) ?? [];
+			list.push(entry);
+			byTicker.set(entry.ticker, list);
+		}
+
+		this.logger.debug({ count: byTicker.size }, "Applying filter to tickers");
+
+		// Apply filter
+		const matching: string[] = [];
+		for (const [ticker, records] of byTicker.entries()) {
+			if (filter(records)) {
+				matching.push(ticker);
+			}
+		}
+
+		this.logger.info({ count: matching.length }, "Tickers matched the filter");
+		return matching;
 	}
 
 	async request<T = unknown>(path: string, params?: URLSearchParams): Promise<T> {

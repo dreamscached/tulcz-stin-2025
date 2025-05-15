@@ -16,7 +16,7 @@ export class TaskService {
 		logger.setContext(TaskService.name);
 	}
 
-	@Cron("0 0,6,12,18 * * *")
+	@Cron("0 0,6,12,18 * * 1-5")
 	async hourlyStockPricesHistoryUpdate() {
 		this.logger.info("Running scheduled task: hourlyStockPricesHistoryUpdate");
 		const hasPreferences = await this.preferences.hasPreferences();
@@ -37,7 +37,7 @@ export class TaskService {
 		this.logger.info("Stock price history updated");
 	}
 
-	@Cron("0 0 * * *")
+	@Cron("0 0 * * 1-5") // except weekends
 	async dailyTickerUpdate() {
 		this.logger.info("Running scheduled task: dailyTickerUpdate");
 		this.logger.info("Updating ticker list");

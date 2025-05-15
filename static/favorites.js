@@ -1,24 +1,34 @@
-// favorites.js
+document.addEventListener("DOMContentLoaded", () => loadFavorites());
 
-document.addEventListener("DOMContentLoaded", loadFavorites);
-
-async function loadFavorites() {
+async function loadFavorites(filter = "3d") {
     const container = document.getElementById("favoritesList");
     showLoading(container);
 
     try {
-        const response = await fetch("/preferences");
-        if (!response.ok) throw new Error("Failed to load preferences");
+        const res = await fetch(`/search/filter/${filter}`);
+        const tickers = await res.json();
 
-        const data = await response.json();
-        renderFavorites(data.favoriteTickers || []);
+        // TODO: USING MOCK DATA HERE, CONNECT WITH REAL API
+        const ratingsData = tickers.map((ticker, i) => ({
+            name: ticker,
+            rating: Math.floor(Math.random() * 11),
+            date: 20240501,
+            sell: 0
+        }));
+
+        const ratingMap = {};
+        for (const { name, rating } of ratingsData) {
+            ratingMap[name] = rating;
+        }
+
+        renderFavorites(tickers, ratingMap);
     } catch (error) {
         console.error("Error loading favorites:", error);
         showError(container, "Could not load favorites.");
     }
 }
 
-function renderFavorites(favorites) {
+function renderFavorites(favorites, ratingMap = {}) {
     const container = document.getElementById("favoritesList");
     container.innerHTML = "";
 
@@ -28,11 +38,14 @@ function renderFavorites(favorites) {
     }
 
     favorites.forEach((ticker) => {
+        const rating = ratingMap[ticker];
+        const isRecommended = rating > 5;
+
         const item = document.createElement("div");
         item.className = "favorite-item";
         item.innerHTML = `
             <div class="stock-info">
-                <h4>${ticker}</h4>
+                <h4>${ticker} ${isRecommended ? '<span class="recommended">★ Recommended</span>' : ''}</h4>
                 <p>Ticker symbol</p>
             </div>
             <button class="remove-favorite" onclick="removeFavorite('${ticker}')">
@@ -75,3 +88,49 @@ function showLoading(container) {
 function showError(container, message) {
     container.innerHTML = `<div class="no-favorites">${message}</div>`;
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    setupTabs();
+    document.querySelector('[data-filter="3d"]')?.classList.add("active");
+    loadFavorites("3d");
+});
+
+function setupTabs() {
+    const buttons = document.querySelectorAll(".tab-button");
+    buttons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+            buttons.forEach((b) => b.classList.remove("active"));
+            btn.classList.add("active");
+
+            const filter = btn.dataset.filter;
+            loadFavorites(filter);
+        });
+    });
+}
+
+document.getElementById("updateFavoritesBtn")?.addEventListener("click", async () => {
+    const button = document.getElementById("updateFavoritesBtn");
+    button.disabled = true;
+    button.textContent = "Updating...";
+
+    try {
+        const res = await fetch("/search/update", {
+            method: "POST"
+        });
+
+        if (!res.ok) throw new Error("Update failed");
+
+        button.textContent = "Updating!";
+        setTimeout(() => {
+            button.textContent = "Update";
+            button.disabled = false;
+        }, 2000);
+    } catch (err) {
+        console.error("Update error:", err);
+        button.textContent = "Error!";
+        setTimeout(() => {
+            button.textContent = "Update";
+            button.disabled = false;
+        }, 3000);
+    }
+});

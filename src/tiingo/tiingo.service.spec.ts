@@ -223,9 +223,9 @@ describe("TiingoService", () => {
 	});
 
 	describe("purgeOldStockPrices()", () => {
-		it("removes stock records older than 5 days", async () => {
+		it("removes stock records older than 7 days", async () => {
 			const now = Date.now();
-			const old = new Date(now - 6 * 86400e3).toISOString();
+			const old = new Date(now - 8 * 86400e3).toISOString();
 			const recent = new Date(now - 1 * 86400e3).toISOString();
 
 			(fs.readFile as MockedFunction<typeof fs.readFile>).mockResolvedValueOnce(
@@ -312,6 +312,33 @@ describe("TiingoService", () => {
 			expect(writeSpy).toHaveBeenCalledWith(expect.any(String), JSON.stringify(["AAPL", "MSFT"]), {
 				encoding: "utf-8"
 			});
+		});
+	});
+
+	describe("filterTickersWithHistory()", () => {
+		const mockConfigService: Partial<ConfigService> = {
+			get: vi.fn(),
+			getOrThrow: vi.fn().mockReturnValue("mock-api-key")
+		};
+
+		const mockLogger = {
+			debug: vi.fn(),
+			info: vi.fn(),
+			warn: vi.fn(),
+			error: vi.fn(),
+			setContext: vi.fn()
+		};
+
+		beforeEach(async () => {
+			const module: TestingModule = await Test.createTestingModule({
+				providers: [
+					TiingoService,
+					{ provide: ConfigService, useValue: mockConfigService },
+					{ provide: PinoLogger, useValue: mockLogger }
+				]
+			}).compile();
+
+			service = module.get(TiingoService);
 		});
 	});
 });
