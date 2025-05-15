@@ -8,9 +8,20 @@ async function loadFavorites(filter = "3d") {
         const res = await fetch(`/search/filter/${filter}`);
         const tickers = await res.json();
 
-        const ratingsDataRes = await fetch(`/search/ratings?tickers=${tickers.join(",")}`);
-        const ratingsData = await ratingsDataRes.json();
+        const ratingsDataRes = await fetch(`/search/ratings`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(tickers.map((it) => ({
+                name: it,
+                date: new Date().getTime(),
+                rating: 0,
+                sell: 0
+            })))
+        });
 
+        const ratingsData = await ratingsDataRes.json();
         const ratingMap = {};
         for (const { name, rating } of ratingsData) {
             ratingMap[name] = rating;

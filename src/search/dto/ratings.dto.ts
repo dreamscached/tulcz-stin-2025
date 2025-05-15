@@ -1,15 +1,24 @@
-import { ApiProperty } from "@nestjs/swagger";
-
-import { Transform } from "class-transformer";
-import { IsArray } from "class-validator";
+import { IsIn, IsInt, IsNumber, IsString, Max, MaxLength, Min, MinLength } from "class-validator";
 
 export class RatingsDto {
-	@IsArray()
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-	@Transform(({ value }) => value.toString().split(","))
-	@ApiProperty({
-		description: "Tickers to request ratings for",
-		example: "AAPL,GOOG"
-	})
-	tickers: string[];
+	@IsString()
+	@MinLength(1)
+	@MaxLength(10)
+	name: string;
+
+	@IsNumber({ allowInfinity: false, allowNaN: false })
+	@IsInt()
+	@Min(0)
+	date: number;
+
+	@IsNumber({ allowInfinity: false, allowNaN: false })
+	@IsInt()
+	@Min(-10)
+	@Max(10)
+	rating: number;
+
+	@IsNumber({ allowInfinity: false, allowNaN: false })
+	@IsInt()
+	@IsIn([0, 1])
+	sell: number;
 }

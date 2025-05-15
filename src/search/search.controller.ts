@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, ParseArrayPipe, Post, Query } from "@nestjs/common";
 import { ApiOperation, ApiQuery, ApiResponse } from "@nestjs/swagger";
 
 import { StocksRatings } from "../news/dto/stocks-ratings.dto.js";
@@ -50,11 +50,11 @@ export class SearchController {
 		return filtered.filter((t) => favorites.includes(t));
 	}
 
-	@Get("/ratings")
+	@Post("/ratings")
 	@ApiOperation({ summary: "Requests ratings from News API for given tickers" })
 	@ApiResponse({ status: 200, description: "Ticker ratings", type: [StocksRatings] })
-	async getRatings(@Query() query: RatingsDto): Promise<StocksRatings[]> {
-		return this.news.getRatings(query.tickers);
+	async getRatings(@Body(new ParseArrayPipe({ items: RatingsDto })) body: RatingsDto[]): Promise<StocksRatings[]> {
+		return this.news.getRatings(body.map((it) => it.name));
 	}
 
 	@Post("/update")
