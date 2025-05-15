@@ -60,4 +60,5 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # Local storage
 files/*
+!files/stock_prices_history.json
 !files/.gitkeep
