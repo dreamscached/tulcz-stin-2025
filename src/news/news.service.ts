@@ -20,28 +20,40 @@ export class NewsService {
 		const body = JSON.stringify(tickers.map((name) => ({ name, date: 0, rating: 0, sell: 0 })));
 		this.logger.debug({ url: url.toString(), body }, "Requesting ratings");
 
-		try {
-			const response = await fetch(url, {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				signal: AbortSignal.timeout(HTTP_REQUEST_TIMEOUT),
-				body
-			});
+		const MAX_RETRIES = 5;
+		const RETRY_DELAY_MS = 1000;
 
-			if (!response.ok) {
-				throw new Error(`News API responded with status ${response.status}`);
+		for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+			try {
+				const response = await fetch(url, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					signal: AbortSignal.timeout(HTTP_REQUEST_TIMEOUT),
+					body
+				});
+
+				if (!response.ok) {
+					throw new Error(`News API responded with status ${response.status}`);
+				}
+
+				const data = (await response.json()) as unknown;
+				if (!Array.isArray(data)) {
+					throw new Error("Invalid response format from News API");
+				}
+
+				this.logger.debug({ data }, "Received ratings");
+				return data as StocksRatings[];
+			} catch (e: unknown) {
+				this.logger.error({ err: e, attempt }, "Failed to fetch ratings");
+
+				if (attempt === MAX_RETRIES) {
+					throw e;
+				}
+
+				await new Promise((res) => setTimeout(res, RETRY_DELAY_MS));
 			}
-
-			const data = (await response.json()) as unknown;
-			if (!Array.isArray(data)) {
-				throw new Error("Invalid response format from News API");
-			}
-
-			this.logger.debug({ data }, "Received ratings");
-			return data as StocksRatings[];
-		} catch (e: unknown) {
-			this.logger.error({ err: e }, "Failed to fetch ratings");
-			throw e;
 		}
+
+		throw new Error("Unreachable: exceeded retry limit");
 	}
 }
