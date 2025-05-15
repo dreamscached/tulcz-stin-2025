@@ -8,7 +8,7 @@ async function loadFavorites(filter = "3d") {
         const res = await fetch(`/search/filter/${filter}`);
         const tickers = await res.json();
 
-        const ratingsDataRes = await fetch(`/search/ratings`, {
+        await fetch(`/search/ratings/request`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -20,6 +20,12 @@ async function loadFavorites(filter = "3d") {
                 sell: 0
             })))
         });
+
+
+        const ratingsDataRes = await fetch(`/search/ratings`);
+        if (ratingsDataRes.status !== 200) {
+            renderFavorites(tickers, {});
+        }
 
         const ratingsData = await ratingsDataRes.json();
         const ratingMap = {};
@@ -57,7 +63,6 @@ function renderFavorites(favorites, ratingMap = {}) {
                     ${shouldSell ? '<span class="recommended">↘ should sell</span>' : ' '}
                     ${shouldBuy ? '<span class="recommended">↗ should buy</span>' : ''}
                 </h4>
-                <p>Ticker symbol</p>
             </div>
             <button class="remove-favorite" onclick="removeFavorite('${ticker}')">
                 <i class="fas fa-times"></i>

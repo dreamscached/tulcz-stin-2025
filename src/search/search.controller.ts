@@ -1,7 +1,12 @@
-import { Body, Controller, Get, HttpCode, ParseArrayPipe, Post, Query } from "@nestjs/common";
+import { readFile } from "node:fs/promises";
+
+import { Body, Controller, Get, HttpCode, NotFoundException, ParseArrayPipe, Post, Query } from "@nestjs/common";
 import { ApiOperation, ApiQuery, ApiResponse } from "@nestjs/swagger";
 
+import { PinoLogger } from "nestjs-pino";
+
 import { StocksRatings } from "../news/dto/stocks-ratings.dto.js";
+import { RATINGS_PATH } from "../news/news.constants.js";
 import { NewsService } from "../news/news.service.js";
 import { PreferencesService } from "../preferences/preferences.service.js";
 import { TaskService } from "../task/task.service.js";
@@ -17,6 +22,7 @@ import { SearchService } from "./search.service.js";
 @Controller("/search")
 export class SearchController {
 	constructor(
+		private readonly logger: PinoLogger,
 		private readonly preferences: PreferencesService,
 		private readonly search: SearchService,
 		private readonly tiingo: TiingoService,
@@ -50,11 +56,41 @@ export class SearchController {
 		return filtered.filter((t) => favorites.includes(t));
 	}
 
-	@Post("/ratings")
+	@Post("/ratings/request")
+	@HttpCode(201)
 	@ApiOperation({ summary: "Requests ratings from News API for given tickers" })
-	@ApiResponse({ status: 200, description: "Ticker ratings", type: [StocksRatings] })
-	async getRatings(@Body(new ParseArrayPipe({ items: RatingsDto })) body: RatingsDto[]): Promise<StocksRatings[]> {
-		return this.news.getRatings(body.map((it) => it.name));
+	@ApiResponse({ status: 201, description: "Requested ratings", type: [StocksRatings] })
+	async requestRatings(@Body(new ParseArrayPipe({ items: RatingsDto })) body: RatingsDto[]): Promise<void> {
+		const tickers = new Set(body.map((it) => it.name));
+		await this.news.expectRatingCallback([...tickers]);
+		// This runs in background
+		this.news
+			.requestRatings(body.map((it) => it.name))
+			.catch((err: unknown) => this.logger.error({ err }, "Failed to request ratings"));
+	}
+
+	@Post("/ratings/callback")
+	@HttpCode(204)
+	@ApiOperation({ summary: "Callback endpoint for News API to return ratings" })
+	@ApiResponse({ status: 204, description: "Ratings saved" })
+	async ratingsCallback(@Body(new ParseArrayPipe({ items: RatingsDto })) body: RatingsDto[]): Promise<void> {
+		await this.news.saveRatings(body);
+	}
+
+	@Get("/ratings")
+	@ApiOperation({ summary: "Returns ratings previously sent by News API " })
+	@ApiResponse({ status: 200, description: "Ratings" })
+	async getRatings(): Promise<StocksRatings[]> {
+		try {
+			const file = await readFile(RATINGS_PATH, { encoding: "utf-8" });
+			return JSON.parse(file) as StocksRatings[];
+		} catch (e: unknown) {
+			if (typeof e === "object" && (e as { code?: string })?.code === "ENOENT") {
+				throw new NotFoundException();
+			} else {
+				throw e;
+			}
+		}
 	}
 
 	@Post("/update")

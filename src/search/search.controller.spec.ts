@@ -1,5 +1,6 @@
 import { Test, TestingModule } from "@nestjs/testing";
 
+import { PinoLogger } from "nestjs-pino";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { NewsService } from "../news/news.service.js";
@@ -33,6 +34,14 @@ describe("SearchController", () => {
 		getPreferences: ReturnType<typeof vi.fn>;
 	};
 
+	const mockLogger = {
+		debug: vi.fn(),
+		info: vi.fn(),
+		warn: vi.fn(),
+		error: vi.fn(),
+		setContext: vi.fn()
+	};
+
 	beforeEach(async () => {
 		mockPreferencesService = {
 			getPreferences: vi.fn()
@@ -41,6 +50,7 @@ describe("SearchController", () => {
 		const moduleRef: TestingModule = await Test.createTestingModule({
 			controllers: [SearchController],
 			providers: [
+				{ provide: PinoLogger, useValue: mockLogger },
 				{ provide: TaskService, useValue: mockTaskService },
 				{ provide: SearchService, useValue: mockSearchService },
 				{ provide: TiingoService, useValue: mockTiingoService },

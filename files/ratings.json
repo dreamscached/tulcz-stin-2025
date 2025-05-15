@@ -1,0 +1,20 @@
+[
+	{
+		"name": "AAPL",
+		"date": 1747338024447,
+		"rating": 10,
+		"sell": 0
+	},
+	{
+		"name": "GOOG",
+		"date": 1747338024447,
+		"rating": 0,
+		"sell": 0
+	},
+	{
+		"name": "V",
+		"date": 1747338024447,
+		"rating": 0,
+		"sell": 0
+	}
+]
