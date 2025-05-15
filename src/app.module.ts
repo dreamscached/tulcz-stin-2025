@@ -32,12 +32,17 @@ const __dirname = dirname(__filename);
 					level: config.getOrThrow("NODE_ENV") !== "production" ? "trace" : "debug",
 					stream: multistream([
 						{
+							level: config.getOrThrow("NODE_ENV") !== "production" ? "trace" : "debug",
 							stream:
 								config.getOrThrow("NODE_ENV") !== "production"
 									? (await import("pino-pretty")).PinoPretty() // Pretty output in development
 									: process.stdout // JSON logging in production
 						},
-						{ stream: createPinoWebSocketTransport(log) } // Push log to buffer & broadcast over WS
+						{
+							// Push log to buffer & broadcast over WS
+							level: config.getOrThrow("NODE_ENV") !== "production" ? "trace" : "debug",
+							stream: createPinoWebSocketTransport(log)
+						}
 					]),
 					formatters: {
 						// Keep label as string in JSON log
