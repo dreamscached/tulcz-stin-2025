@@ -1,108 +1,97 @@
-# 📈 Burzalupa – Stock Tracker App
+# 📈 STIN 2025 – Burza Module
 
-Burzalupa is a full-stack application for tracking stock favorites. It includes:
+This repository contains the **Burza module** for the STIN 2025 semester project.
+ It is responsible for fetching, filtering, and managing stock data, as well as
+ interacting with an external News (Zprávy) module to receive sentiment-based
+ stock ratings.
 
-- ✅ A NestJS-based backend (API + static serving)
-- ✅ A static frontend with favorites and search functionality
-- ✅ User preferences persisted on the server
-- ✅ Vitest test coverage and CI integration
-
-## 👥 Contributors
-
-- @dreamscached &mdash; backend development, unit/e2e testing
-- @inaleka &mdash; frontend development, UI design, logo design
+Developed with a responsive frontend and a modular NestJS backend, the system
+supports scheduled data updates, user-defined filtering, and REST-based
+integration.
 
 ---
 
-## 🧪 Testing
+## 👨‍💻 Contributors
 
-Run unit, e2e, and coverage tests:
-
-```bash
-yarn install
-yarn test           # Unit tests
-yarn test:e2e       # End-to-end tests
-yarn test:cov       # Coverage (HTML + summary)
-```
-
-To view HTML coverage report:
-
-```bash
-open coverage/index.html
-```
+- German Semin
+- Mikhail Belov
+- Inal Ekashaev
 
 ---
 
-## 🚀 Deployment
+## 🧩 Features
 
-### 🐳 Docker
+### 🔄 Data Management
+- Scheduled and manual updates of historical stock data at `0:00`, `6:00`, `12:00`, `18:00`
+- Retrieves current/historical prices for user-specified favorite tickers
+- Persistent storage of user-defined preferences in a JSON file
 
-#### 📦 Build & Run with Docker Compose
+### ⭐ Favorites
+- REST API to update and retrieve favorite tickers (`/preferences`)
+- Favorites are used as the base scope for all filters and ratings
+- Fully responsive UI to manage favorites on desktop and mobile
 
-```bash
-docker compose up --build
-```
+### 🔍 Filtering
+- `/search/filter/3d`: Filters tickers that dropped 3 consecutive business days
+- `/search/filter/5d`: Filters tickers that dropped on more than 2 of the last 5 business days
+- Filters always intersect results with user favorites
 
-- Backend listens on: [http://localhost:8080](http://localhost:8080)
-- Static frontend is served by NestJS under the same address.
+### 🔗 Integration with Zprávy (News) Module
+- `/search/ratings`: Calls the external News API to get ratings for tickers
+- Ratings are integer values between `-10` and `10`
+- Recommended stocks (rating > 5) are visually highlighted in the UI
 
-> Ensure port 8080 is available on your host.
-
----
-
-## 🌍 Environment Variables
-
-Located in `.env` or `.env.local`:
-
-```env
-APP_PORT=3000
-NODE_ENV=dev
-```
-
-You can override in production like:
-
-```bash
-docker run -e APP_PORT=4000 -e NODE_ENV=production ...
-```
+### ⚙️ Technical Highlights
+- Developed in **TypeScript** using **NestJS** and **Vitest**
+- >80% **test coverage** (unit + e2e)
+- **Dockerized** deployment using `Dockerfile` and `docker-compose.yml`
+- **CI/CD** with GitHub Actions (`check.yml`, `docker_build.yml`)
+- **Externalized configuration** using `.env` and `ConfigService`
+- Strict schema validation for API data (DTOs for rating, preferences, search)
 
 ---
 
-## 📦 Manual
+## 📁 JSON Data Format
 
-### 1. Build backend
-
-```bash
-yarn install
-yarn build
+Used for internal communication and rating payloads:
+```json
+[
+  { "name": "Microsoft", "date": 12345678, "rating": -10, "sell": 1 },
+  { "name": "Google", "date": 12345678, "rating": 10, "sell": 0 },
+  { "name": "OpenAI", "date": 12345678, "rating": 2, "sell": 0 }
+]
 ```
-
-### 2. Start server
-
-```bash
-yarn start:prod
-```
-
-Then visit: [http://localhost:3000](http://localhost:3000)
+- `rating`: range from `-10` (strongly negative) to `+10` (strongly positive)
+- `sell`: 1 = sell recommended, 0 = hold/buy
 
 ---
 
-## 📂 Preferences Storage
+## 🖥 UI Features
 
-Preferences are saved as a JSON file at:
+- Desktop & mobile-friendly
+- Filter tabs for 3d and 5d drop filters
+- Star icons to manage favorites directly from search
+- "★ Recommended" label on highly-rated tickers
+- Manual update button to trigger data refresh
 
-```
-files/preferences.json
-```
+---
 
-Automatically initialized on first run.
+## 📦 Endpoints Overview
 
-## 📉 Price History Storage
+| Method | Endpoint             | Description                            |
+|--------|----------------------|----------------------------------------|
+| GET    | `/preferences`       | Get current user preferences           |
+| PATCH  | `/preferences`       | Update user favorite tickers           |
+| GET    | `/search?query=...`  | Autocomplete/search for ticker names   |
+| GET    | `/search/filter/3d`  | Get favorite tickers with 3-day drop   |
+| GET    | `/search/filter/5d`  | Get favorite tickers with 3+ drops in 5 days |
+| GET    | `/search/ratings`    | Request ratings from News module       |
+| POST   | `/search/update`     | Manually trigger stock data update     |
 
-Historical stock prices are saved in:
+---
 
-```
-files/stock_prices_history.json
-```
+## 🧪 Development
 
-This file is updated periodically (every 6 hours) using scheduled background
-jobs, and records older than 5 days are automatically purged to reduce size.
+- Run tests: `yarn test`
+- Run app: `docker-compose up`
+- View logs: Visit `/log` (WebSocket live log view)
